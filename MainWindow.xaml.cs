@@ -20,17 +20,48 @@ namespace BotScanner
         public MainWindow()
         {
             InitializeComponent();
+            PreencherComboBoxMarcas();
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Projeto projeto = new Projeto();
-            projeto.IniciarNavegador();
-
+            txtDataHoraAtual.Text = DateTime.Now.ToString();
             Thread.Sleep(1000);
 
-            projeto.EncerrarNavegador();
+
+            //Projeto projeto = new();            
+            //projeto.IniciarNavegador();         
+            //projeto.EncerrarNavegador();
             
+        }
+
+        public void CarregarLogotipos()
+        {
+            
+        }
+
+        private void CheckBox_Checked(object sender, RoutedEventArgs e)
+        {
+            cmbMarcas.SelectedIndex = -1;
+        }
+
+        private void PreencherComboBoxMarcas()
+        {
+            List<string> marcas = ["Guess Brasil", "Rovitex"];
+            cmbMarcas.ItemsSource = marcas.OrderBy(marca => marca).ToList();
+        }
+
+        private void cmbMarcas_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (chkSelecionarTodasMarcas.IsChecked == true)            
+                chkSelecionarTodasMarcas.IsChecked = false;
+            
+
+            if (cmbMarcas.SelectedItem != null)
+            {
+                string selectedBrand = cmbMarcas.SelectedItem.ToString();
+                MessageBox.Show("Marca selecionada: " + selectedBrand);
+            }
         }
     }
 }
