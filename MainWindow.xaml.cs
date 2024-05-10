@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using BotScanner._00___Setup;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -23,7 +24,13 @@ namespace BotScanner
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            Projeto projeto = new Projeto();
+            projeto.IniciarNavegador();
 
+            Thread.Sleep(1000);
+
+            projeto.EncerrarNavegador();
+            
         }
     }
 }

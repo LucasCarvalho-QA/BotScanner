@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="00 - Setup\" />
     <Folder Include="01 - Sellers\" />
     <Folder Include="02 - Utilidades\" />
     <Folder Include="03 - Dados\" />
