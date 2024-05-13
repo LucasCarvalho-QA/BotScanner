@@ -13,10 +13,10 @@ namespace BotScanner._02___Utilidades.ConectaLa
         public int offset { get; set; }
         public Result result { get; set; }
 
-        public static Produtos? SelecionarProdutos()
+        public static Produtos SelecionarProdutos()
         {
             RestParametros parametros = new RestParametros().ConfiguracaoChamadaAPI();
-            parametros.Endpoint = "Api/V1/Products/";
+            parametros.Endpoint = "Api/V1/Products/list";
             string response = Rest.RealizarChamadaAPI(parametros);
 
             return JsonConvert.DeserializeObject<Produtos>(response);

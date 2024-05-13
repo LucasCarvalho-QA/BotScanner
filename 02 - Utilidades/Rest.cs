@@ -13,11 +13,12 @@ namespace BotScanner._02___Utilidades
     public class RestParametros
     {
         public Method Metodo { get; set; }
-        public string? BaseURL {  get; set; }
-        public string? Endpoint { get; set; }        
-        public string? UserEmail { get; set; }
-        public string? ApiKey { get; set; }
-        public string? StoreKey { get; set; }
+        public string BaseURL {  get; set; }
+        public string Endpoint { get; set; }        
+        public string UserEmail { get; set; }
+        public string XEmail { get; set; }
+        public string ApiKey { get; set; }
+        public string ProviderKey { get; set; }
 
         public RestParametros ConfiguracaoChamadaAPI() 
         {
@@ -25,10 +26,11 @@ namespace BotScanner._02___Utilidades
             { 
                 Metodo = Method.Get,
                 Endpoint = string.Empty,                
-                BaseURL = "https://3f9af969-e3d5-4abc-943a-d0c3ad4f1905.mock.pstmn.io/app/",
-                UserEmail = "your-email@example.com",
-                ApiKey = "your-api-key",
-                StoreKey = "tour-store-key",
+                BaseURL = "https://privaliateste.conectala.com.br/app/",
+                UserEmail = "api@privalia.com",
+                ApiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm92aWRlcl9pZCI6IjEiLCJlbWFpbCI6ImFwaUBwcml2YWxpYS5jb20ifQ.pZuGeku8WM3aGmDJ7ZJtEAZ5pzpqn8HWBqqP71JUIgA",
+                ProviderKey = "1",
+                XEmail = "api@privalia.com"
             };
         }
     }
@@ -44,7 +46,8 @@ namespace BotScanner._02___Utilidades
             request.AddHeader("accept", "application/json;charset=UTF-8");
             request.AddHeader("x-user-email", parametros.UserEmail);
             request.AddHeader("x-api-key", parametros.ApiKey);
-            request.AddHeader("x-store-key", parametros.StoreKey);            
+            request.AddHeader("x-provider-key", parametros.ProviderKey);
+            request.AddHeader("x-email", parametros.XEmail);
 
             var response = client.Execute(request);            
             return response.Content;

@@ -1,4 +1,5 @@
 ﻿using BotScanner._00___Setup;
+using BotScanner._01___Sellers;
 using BotScanner._02___Utilidades;
 using BotScanner._02___Utilidades.ConectaLa;
 using System.Text;
@@ -25,23 +26,56 @@ namespace BotScanner
             PreencherComboBoxMarcas();  
         }
 
+        public static Produtos produtosSelecionados = null;
+        public static int itensValidados = 0;
+
         private void Button_Click(object sender, RoutedEventArgs e)
+        {   
+            if (cmbMarcas.SelectedIndex == -1 && chkSelecionarTodasMarcas.IsChecked == false)
+                MessageBox.Show("Selecione ao menos uma marca/seller para continuar");
+            else
+                IniciarProjeto(cmbMarcas.SelectedItem.ToString());
+        }
+
+        public void AtribuirQuantidadeItens()
+        {
+            txtQuantidadeTotalItens.Text = produtosSelecionados.result.registers_count.ToString();
+        }
+
+        public void AtribuirItensRestantes()
+        {
+            txtItensPendentesValidacao.Text = (produtosSelecionados.result.registers_count - itensValidados).ToString();
+        }
+
+        public void AtribuirItensValidados()
+        {
+            txtItensValidados.Text = itensValidados.ToString();
+        }
+
+        public void IniciarProjeto(string seller)
         {
             txtDataHoraAtual.Text = DateTime.Now.ToString();
 
-             var oi = Produtos.SelecionarProdutos();
+            produtosSelecionados = Produtos.SelecionarProdutos();
 
-            //IniciarProjeto();
+            AtribuirQuantidadeItens();
+            AtribuirItensRestantes();
+            AtribuirItensValidados();            
+
+            AcessarFluxoSeller(seller);                        
         }
 
-        public void IniciarProjeto()
-        {
-            Projeto projeto = new();
-            projeto.IniciarNavegador();
-            projeto.EncerrarNavegador();
 
-            if (cmbMarcas.SelectedIndex == -1 && chkSelecionarTodasMarcas.IsChecked == false)
-                MessageBox.Show("Selecione ao menos uma marca/seller para continuar");
+        public void AcessarFluxoSeller(string seller)
+        {            
+            switch (seller)
+            {
+                case "Rovitex":                    
+                    Rovitex.FluxoRovitex();
+                    break;
+                default:            
+                    break;
+            }            
         }
 
 
@@ -53,7 +87,7 @@ namespace BotScanner
 
         private void PreencherComboBoxMarcas()
         {
-            List<string> marcas = ["Guess Brasil", "Rovitex"];
+            List<string> marcas = ["Rovitex"];
             cmbMarcas.ItemsSource = marcas.OrderBy(marca => marca).ToList();
         }
 

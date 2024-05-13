@@ -10,7 +10,7 @@ namespace BotScanner._00___Setup
     public class Projeto : WebDriver
     {
         
-        public void IniciarNavegador()
+        public static void IniciarNavegador(string url)
         {
             ParametrosWebDriver parametros = new() 
             { 
@@ -19,10 +19,10 @@ namespace BotScanner._00___Setup
             };
 
             ConfigurarWebDriverChrome(parametros);
-            NavegarPara("https://www.guessbrasil.com.br/");
+            NavegarPara(url);
         }
 
-        public void EncerrarNavegador()
+        public static void EncerrarNavegador()
         {
             EncerrarWebDriver();
         }

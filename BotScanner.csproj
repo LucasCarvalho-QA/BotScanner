@@ -27,7 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="01 - Sellers\" />
     <Folder Include="03 - Dados\" />
     <Folder Include="04 - Evidencias\" />
     <Folder Include="05 - Robos\" />
