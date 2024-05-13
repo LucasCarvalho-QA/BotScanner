@@ -1,4 +1,6 @@
 ﻿using BotScanner._00___Setup;
+using BotScanner._02___Utilidades;
+using BotScanner._02___Utilidades.ConectaLa;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,25 +22,29 @@ namespace BotScanner
         public MainWindow()
         {
             InitializeComponent();
-            PreencherComboBoxMarcas();
+            PreencherComboBoxMarcas();  
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             txtDataHoraAtual.Text = DateTime.Now.ToString();
-            Thread.Sleep(1000);
 
+             var oi = Produtos.SelecionarProdutos();
 
-            //Projeto projeto = new();            
-            //projeto.IniciarNavegador();         
-            //projeto.EncerrarNavegador();
-            
+            //IniciarProjeto();
         }
 
-        public void CarregarLogotipos()
+        public void IniciarProjeto()
         {
-            
+            Projeto projeto = new();
+            projeto.IniciarNavegador();
+            projeto.EncerrarNavegador();
+
+            if (cmbMarcas.SelectedIndex == -1 && chkSelecionarTodasMarcas.IsChecked == false)
+                MessageBox.Show("Selecione ao menos uma marca/seller para continuar");
         }
+
+
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
@@ -62,6 +68,11 @@ namespace BotScanner
                 string selectedBrand = cmbMarcas.SelectedItem.ToString();
                 MessageBox.Show("Marca selecionada: " + selectedBrand);
             }
+        }
+
+        private void txtLog_TextChanged(object sender, TextChangedEventArgs e)
+        {
+
         }
     }
 }
