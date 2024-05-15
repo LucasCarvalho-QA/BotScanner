@@ -1,5 +1,8 @@
-﻿using OpenQA.Selenium.Chrome;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
+using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,6 +45,76 @@ namespace BotScanner._00___Setup
         public static void NavegarPara(string url)
         {
             driver.Navigate().GoToUrl(url);
+        }
+
+        public static IWebElement BuscarElemento(By buscarPor)
+        {
+            IWebElement elemento = null;
+
+            try
+            {
+                return wait.Until(ExpectedConditions.ElementToBeClickable(buscarPor));
+            }
+            catch (Exception)
+            {
+               
+
+                return null;
+            }
+        }
+
+        public static bool VerificarVisibilidadeDoElemento(By buscarPor)
+        {
+            try
+            {
+                return wait.Until(ExpectedConditions.ElementIsVisible(buscarPor)).Displayed;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public static IWebElement BuscarElemento_PorXpath(string xpath)
+        {
+            return BuscarElemento(By.XPath(xpath));
+        }
+
+        public static IWebElement BuscarElemento_PorID(string id)
+        {
+            return BuscarElemento(By.Id(id));
+        }
+
+        public static string BuscarTextoDoElementoPorID(string id)
+        {
+            return BuscarElemento_PorID(id).Text;
+        }
+
+        public static string BuscarTextoDoElemento_PorXpath(string xpath)
+        {
+            return BuscarElemento_PorXpath(xpath).Text;
+        }
+
+        public static void RealizarClique_PorXpath(string xpath)
+        {
+            BuscarElemento_PorXpath(xpath).Click();
+        }
+
+        public static void RealizarClique_PorID(string id)
+        {
+            BuscarElemento_PorID(id).Click();
+        }
+
+        public static void RealizarCliqueSimulandoUsuario(By buscarPor)
+        {
+            var elemento = BuscarElemento(buscarPor);
+
+            Actions builder = new Actions(driver);
+            builder
+                .MoveToElement(elemento)
+                .Click()
+                .Build()
+                .Perform();
         }
     }
 }

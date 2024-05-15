@@ -10,7 +10,7 @@ namespace BotScanner._00___Setup
     public class Projeto : WebDriver
     {
         
-        public static void IniciarNavegador(string url)
+        public static void IniciarNavegador()
         {
             ParametrosWebDriver parametros = new() 
             { 
@@ -18,8 +18,7 @@ namespace BotScanner._00___Setup
                 TempoEspera = 5 
             };
 
-            ConfigurarWebDriverChrome(parametros);
-            NavegarPara(url);
+            ConfigurarWebDriverChrome(parametros);            
         }
 
         public static void EncerrarNavegador()

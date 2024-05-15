@@ -20,13 +20,13 @@ namespace BotScanner._02___Utilidades
         public string ApiKey { get; set; }
         public string ProviderKey { get; set; }
 
-        public RestParametros ConfiguracaoChamadaAPI() 
+        public static RestParametros ConfiguracaoChamadaAPI() 
         {
             return new RestParametros 
             { 
                 Metodo = Method.Get,
                 Endpoint = string.Empty,                
-                BaseURL = "https://privaliateste.conectala.com.br/app/",
+                BaseURL = "https://privaliamarketplace.conectala.com.br/app/",
                 UserEmail = "api@privalia.com",
                 ApiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm92aWRlcl9pZCI6IjEiLCJlbWFpbCI6ImFwaUBwcml2YWxpYS5jb20ifQ.pZuGeku8WM3aGmDJ7ZJtEAZ5pzpqn8HWBqqP71JUIgA",
                 ProviderKey = "1",
