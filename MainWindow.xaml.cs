@@ -27,20 +27,20 @@ namespace BotScanner
         private string _logText;
         public string LogText
         {
-            get { return _logText; }
+            get => _logText;
             set
             {
                 if (_logText != value)
                 {
                     _logText = value;
-                    OnPropertyChanged();
+                    OnPropertyChanged(nameof(LogText));
                 }
             }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        protected void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
@@ -61,65 +61,118 @@ namespace BotScanner
 
         public static Produtos produtosSelecionados = null;
         public static int itensValidados = 0;
-        public static int quantidadeTotalItens = 0;
+        public static int itensValidadosOK = 1;
+        public static int itensValidadosNOK = 1;
+        public static float quantidadeTotalItens = 0;
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             if (cmbMarcas.SelectedIndex == -1 && chkSelecionarTodasMarcas.IsChecked == false)
                 MessageBox.Show("Selecione ao menos uma marca/seller para continuar");
             else
-                IniciarProjeto(cmbMarcas.SelectedItem.ToString());
+                await IniciarProjeto(cmbMarcas.SelectedItem.ToString());
         }
 
-        public void AtribuirQuantidadeItens()
-        {
-            txtQuantidadeTotalItens.Text = quantidadeTotalItens.ToString();
-        }
-
-        public void AtribuirItensRestantes()
-        {
-            txtItensPendentesValidacao.Text = (quantidadeTotalItens - itensValidados).ToString();
-        }
-
-        public void AtribuirItensValidados()
-        {
-            txtItensValidados.Text = itensValidados.ToString();
-        }
-
-        public void PopularVariaveisIniciais()
-        {
-            quantidadeTotalItens = produtosSelecionados.result.registers_count;
-
-            AtribuirQuantidadeItens();
-            AtribuirItensRestantes();
-            AtribuirItensValidados();
-        }
-
-        public void IniciarProjeto(string seller)
+        public async Task IniciarProjeto(string seller)
         {
             txtDataHoraAtual.Text = DateTime.Now.ToString();
+            await AcessarFluxoSeller(seller);
+        }//txtPrevisaoTermino
 
-            AcessarFluxoSeller(seller);
+        public async Task FinalizarProjeto()
+        {
+            txtPrevisaoTermino.Text = DateTime.Now.ToString();
         }
 
-        public void AcessarFluxoSeller(string seller)
+        public async Task AcessarFluxoSeller(string seller)
         {
             switch (seller)
             {
                 case "Rovitex":
                     Rovitex rovitex = new();
-                    Rovitex.FluxoRovitex();
-                    PopularVariaveisIniciais();
+                    MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
+                    await rovitex.CarregarProdutosAsync(); // Chamada assíncrona para carregar produtos                    
+                    await PopularVariaveisIniciais(); // Chamada assíncrona
+                    await Rovitex.FluxoRovitex(mainWindow);                    
                     break;
                 default:
                     break;
             }
+            await FinalizarProjeto();
         }
 
-        public void AtualizarLog(string name)
+
+        public async Task AtribuirQuantidadeItens()
         {
-            ViewModel.LogText = $"Validando o item '{name}'";
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtQuantidadeTotalItens.Text = quantidadeTotalItens.ToString();
+            });
         }
+
+
+        public async Task AtribuirItensRestantes()
+        {
+            var oi = quantidadeTotalItens;
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtItensPendentesValidacao.Text = quantidadeTotalItens--.ToString();
+            });
+        }
+
+        public async Task AtribuirItensValidados()
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtItensValidados.Text = itensValidados++.ToString();
+            });
+        }
+
+        public async Task AtribuirItensOK()
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtItensValidadosOK.Text = itensValidadosOK++.ToString();
+            });
+        }
+
+        public async Task AtribuirItensNotOK()
+        {
+            await Dispatcher.InvokeAsync(() =>
+            {
+                txtItensDivergentes.Text = itensValidadosNOK++.ToString();
+            });
+        }
+
+        public async Task PopularVariaveisIniciais()
+        {
+            quantidadeTotalItens = produtosSelecionados.result.registers_count;
+
+            await AtribuirQuantidadeItens();
+            await AtribuirItensRestantes();
+            await AtribuirItensValidados();
+        }
+
+
+
+
+        public async Task AtualizarLogAsync(string name, string status)
+        {
+            status = status == "True" ? "OK" : "NOK";
+            Dispatcher.Invoke(() =>
+            {
+                ViewModel.LogText += $"'{name}': {status}\n"; // Adiciona uma nova linha para cada item validado
+            });
+
+            await AtribuirItensValidados();
+            await AtribuirItensRestantes();
+
+            if (status == "OK")
+                await AtribuirItensOK();
+            else
+                await AtribuirItensNotOK();                        
+        }
+
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
         {
@@ -144,9 +197,6 @@ namespace BotScanner
             }
         }
 
-        private void txtLog_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ViewModel.LogText = $"Validando o item ''";
-        }
+     
     }
 }

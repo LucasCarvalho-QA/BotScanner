@@ -17,72 +17,93 @@ namespace BotScanner._01___Sellers
     {
         RestParametros restParametros = new();
 
-        internal static string url = "https://www.rovitex.com.br/";
+        internal static string urlBase = "https://www.rovitex.com.br/";
         internal static string rovitextEndpoint = "Api/V1/Products/list?store=78&status=enabled";
         internal static Produtos produtosCarregados = new();
         public static bool status;
 
         public Rovitex()
         {
-            CarregarProdutos();
+            _ = CarregarProdutosAsync();
         }
 
-        public static void FluxoRovitex()
+        public async Task CarregarProdutosAsync()
         {
-            MainWindow main = new();
+            await CarregarProdutos();
+        }
+        
+        public static async Task<Produtos> CarregarProdutos()
+        {
+            RestParametros parametrosRovitex = RestParametros.ConfiguracaoChamadaAPI();
+            parametrosRovitex.Endpoint = rovitextEndpoint;
+
+            string response = await Rest.RealizarChamadaAPIAsync(parametrosRovitex);
+            produtosCarregados = JsonConvert.DeserializeObject<Produtos>(response);
+
+            MainWindow.produtosSelecionados = produtosCarregados;            
+
+            return produtosCarregados;
+        }
+
+
+        public static async Task FluxoRovitex(MainWindow main)
+        {
             string planilhaRelatorio = PlanilhaPage.GerarPlanilha("Rovitex");
+            var produtosCarregadosViaAPI = produtosCarregados.result.data.Take(50);
 
-            IniciarNavegador();            
+            MainWindow.quantidadeTotalItens += produtosCarregadosViaAPI.Count();
 
-            foreach (var produto in produtosCarregados.result.data.Take(5))
+            PlanilhaPage produtoValidado = new();
+
+            IniciarNavegador();
+
+            foreach (var produto in produtosCarregadosViaAPI)
             {
-                main.AtualizarLog(produto.product.name);
-
-                RealizarBusca(produto.product.sku);
+                string termoBusca = RealizarBusca(produto.product.sku);
                 AcessarProduto();
-                ValidarNome(produto.product.name);
-            }           
-            
-            
+
+                ValidarNome(produto.product.name, produtoValidado);
+
+                produtoValidado.Seller = "Rovitex";
+                produtoValidado.SKU_Parceiro = produto.product.sku;
+                produtoValidado.LinkBusca = termoBusca;
+
+                produtoValidado.Status = status.ToString();
+
+                PlanilhaPage.AtualizarPlanilha(planilhaRelatorio, produtoValidado);
+                
+                await main.AtualizarLogAsync(produto.product.name, produtoValidado.Status);
+
+                // Adiciona um pequeno atraso para permitir a atualização da UI
+                await Task.Delay(100);
+            }
+
             ValidarPreco();
             ValidarDescricao();
             ValidarPreco();
             ValidarDescricao();
             ValidarCor();
 
-            produto.Status = status;
-            PlanilhaPage.AtualizarPlanilha(planilhaRelatorio, produto);
-
-            EncerrarNavegador();    
+            EncerrarNavegador();
         }
+
 
         public static string FormatarSKU(string sku)
         {
             return sku.Replace("P_", "");
         }
 
-        public static Produtos CarregarProdutos()
-        {
-            RestParametros parametrosRovitex = RestParametros.ConfiguracaoChamadaAPI();
-            parametrosRovitex.Endpoint = rovitextEndpoint;
+        
 
-            string response = Rest.RealizarChamadaAPI(parametrosRovitex);
-            produtosCarregados = JsonConvert.DeserializeObject<Produtos>(response);
-
-            MainWindow.produtosSelecionados = produtosCarregados;
-
-            return produtosCarregados;
-        }
-
-        public static void RealizarBusca(string termoBusca)
+        public static string RealizarBusca(string termoBusca)
         {            
-            NavegarPara($"https://www.rovitex.com.br/{FormatarSKU(termoBusca)}");
+            NavegarPara($"{urlBase}{FormatarSKU(termoBusca)}");
+
+            return $"{urlBase}{FormatarSKU(termoBusca)}";
         }
 
         public static string AcessarProduto()
         {
-            //RealizarClique_PorXpath("//*[@id=\"gallery-layout-container\"]/div[1]");            
-
             try
             {
                 BuscarElemento_PorXpath("//*[@id=\"gallery-layout-container\"]/div/section/a").Click();
@@ -97,23 +118,32 @@ namespace BotScanner._01___Sellers
             }
         }
 
-        public static string ValidarNome(string nomeProdutoReferencia)
+        public static bool ValidarNome(string nomeProdutoReferencia, PlanilhaPage produtoValidado)
         {
-            string nomeEncontradoProduto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[1]/div/div/div[1]/h1/span");           
+            string nomeEncontradoProduto = string.Empty;
+            string nomeEsperadoProduto = nomeProdutoReferencia;
 
             try
             {
-                string texto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[1]/div/div/div[1]/h1/span").ToUpper();
+                nomeEncontradoProduto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[1]/div/div/div[1]/h1/span");
 
                 if (nomeEncontradoProduto.Equals(nomeProdutoReferencia))
                     status = true;
-                return texto;
+                else                
+                    status = false;
+                
+
+                produtoValidado.NomeEncontrado = nomeEncontradoProduto;
+                produtoValidado.NomeEsperado = nomeEsperadoProduto;
+
+                return status;
             }
 
             catch (Exception e)
             {
-                status = false;                
-                return $"Nome do item não encontrado na página";
+                produtoValidado.NomeEncontrado = "Produto não encontrado";
+                produtoValidado.NomeEsperado = nomeEsperadoProduto;
+                return status = false;                                
             }
         }
 

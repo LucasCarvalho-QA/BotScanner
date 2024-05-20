@@ -4,6 +4,8 @@ using RestSharp.Authenticators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Runtime.Intrinsics.Arm;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,12 +38,12 @@ namespace BotScanner._02___Utilidades
     }
 
     public class Rest
-    {   
-        public static string RealizarChamadaAPI(RestParametros parametros)
+    {
+        public static async Task<string> RealizarChamadaAPIAsync(RestParametros parametros)
         {
-            RestClient client = new(parametros.BaseURL);
+            RestClient client = new RestClient(parametros.BaseURL);
 
-            RestRequest request = new(parametros.Endpoint, parametros.Metodo);
+            RestRequest request = new RestRequest(parametros.Endpoint, parametros.Metodo);
             request.AddHeader("Content-Type", "application/json");
             request.AddHeader("accept", "application/json;charset=UTF-8");
             request.AddHeader("x-user-email", parametros.UserEmail);
@@ -49,8 +51,10 @@ namespace BotScanner._02___Utilidades
             request.AddHeader("x-provider-key", parametros.ProviderKey);
             request.AddHeader("x-email", parametros.XEmail);
 
-            var response = client.Execute(request);            
+            var response = await client.ExecuteAsync(request);
             return response.Content;
         }
+
+ 
     }
 }

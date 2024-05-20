@@ -16,7 +16,7 @@
         <Button x:Name="btnIniciar" Content="Iniciar" HorizontalAlignment="Left" Margin="19,201,0,0" VerticalAlignment="Top" Click="Button_Click" Width="60" Height="29" FontWeight="Bold" RenderTransformOrigin="-0.232,0.549" Grid.ColumnSpan="3"/>
         <Image x:Name="logoAuditeste" Margin="561,30,48,382" Source="/rsz_2logo-auditeste.png" Stretch="Fill" Grid.Column="2"/>
         <Label x:Name="titulo" Content="Bot Scanner" HorizontalAlignment="Left" Height="60" Margin="236,3,0,0" VerticalAlignment="Top" Width="184" FontSize="30" FontWeight="Bold" Grid.Column="2"/>
-        <TextBox x:Name="txtLog" HorizontalAlignment="Left" Margin="183,112,0,0" TextWrapping="Wrap" Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="300" Height="175" Grid.Column="2" TextChanged="txtLog_TextChanged"/>
+        <TextBox x:Name="txtLog" HorizontalAlignment="Left" Margin="183,112,0,0" TextWrapping="Wrap" Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="300" Height="175" Grid.Column="2"/>
         <Button x:Name="btnBaixarLog" Content="Baixar Log" HorizontalAlignment="Left" Margin="580,304,0,0" VerticalAlignment="Top" Click="Button_Click" Width="85" Height="28" FontWeight="Bold" RenderTransformOrigin="-0.232,0.549" Grid.Column="2"/>
         <ComboBox x:Name="cmbMarcas" HorizontalAlignment="Left" Margin="19,112,0,0" VerticalAlignment="Top" Width="180" Grid.ColumnSpan="3" SelectionChanged="cmbMarcas_SelectionChanged"/>
         <Label x:Name="lblTituloComboMarcas" Content="Selecione uma Marca" HorizontalAlignment="Left" Margin="19,77,0,0" VerticalAlignment="Top" Grid.ColumnSpan="3"/>

@@ -27,7 +27,9 @@ namespace BotScanner._00___Setup
         {
             ChromeOptions? chromeOptions = new();
             chromeOptions.AddArguments("--start-maximized");
-            chromeOptions.AddArguments("ignore-certificate-errors");                        
+            chromeOptions.AddArguments("ignore-certificate-errors");
+
+            parametros.Headless = true;
 
             if (parametros.Headless)
                 chromeOptions.AddArgument("--headless=new");

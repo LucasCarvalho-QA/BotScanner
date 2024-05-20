@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace BotScanner._02___Utilidades.Relatorio
 {
-    internal class PlanilhaPage
+    public class PlanilhaPage
     {
         public string Seller { get; set; }                
         public string SKU_Parceiro { get; set; }
-        public bool Status { get; set; }
-        public bool ItemEncontrado { get; set; }
+        public string Status { get; set; } //bool
+        public string ItemEncontrado { get; set; } //bool
 
 
         public string NomeEsperado { get; set; }
@@ -56,7 +56,7 @@ namespace BotScanner._02___Utilidades.Relatorio
         public static void MoverArquivo(string nomeArquivo)
         {
             var diretorioAtual = Path.Combine(Environment.CurrentDirectory, nomeArquivo);
-            var diretorioDestino = Path.Combine(Environment.CurrentDirectory, $@"05 - Dados\\{nomeArquivo}");
+            var diretorioDestino = Path.Combine(Environment.CurrentDirectory, $@"05 - Dados\\{nomeArquivo}").Replace("\\\\","\\");
 
             File.Move(diretorioAtual, diretorioDestino);
         }
@@ -72,25 +72,24 @@ namespace BotScanner._02___Utilidades.Relatorio
             foreach (var linha in linhas)
             {
               var dado = new PlanilhaPage
-                {
-                    Seller = linha.Cell("A1").Value = "Seller",
-                    SKU_Parceiro = linha.Cell("B1").Value = "SKU Parceiro",
-                    Status = linha.Cell("C1").Value = "Status",
-                    ItemEncontrado = linha.Cell("D1").Value = "Item encontrado?",
+              {
+                    Seller = linha.Cell("A1").GetValue<string>(),
+                    SKU_Parceiro = linha.Cell("B1").GetValue<string>(),
+                    Status = linha.Cell("C1").GetValue<string>(),
+                    ItemEncontrado = linha.Cell("D1").GetValue<string>(),
 
-                    NomeEsperado = linha.Cell("E1").Value = "Nome esperado",
-                    NomeEncontrado = linha.Cell("F1").Value = "Nome encontrado",
-                    DescricaoEsperada = linha.Cell("G1").Value = "Descricao esperada",
-                    DescricaoEncontrada = linha.Cell("H1").Value = "Descricao encontrada",
-                    PrecoEsperado = linha.Cell("I1").Value = "Preco esperado",
-                    PrecoEncontrado = linha.Cell("J1").Value = "Preco encontrado",
-                    CoresEsperadas = linha.Cell("K1").Value = "Cores esperadas",
-                    CoresEncontradas = linha.Cell("L1").Value = "Cores encontradas",
+                    NomeEsperado = linha.Cell("E1").GetValue<string>(),
+                    NomeEncontrado = linha.Cell("F1").GetValue<string>(),
+                    DescricaoEsperada = linha.Cell("G1").GetValue<string>(),
+                    DescricaoEncontrada = linha.Cell("H1").GetValue<string>(),
+                    PrecoEsperado = linha.Cell("I1").GetValue<string>(),
+                    PrecoEncontrado = linha.Cell("J1").GetValue<string>(),
+                    CoresEsperadas = linha.Cell("K1").GetValue<string>(),
+                    CoresEncontradas = linha.Cell("L1").GetValue<string>(),
 
-                    Observacao = linha.Cell("M1").Value = "Observação",
-                    linha.Cell("N1").Value = "Link do produto",
-
-                    linha.Cell("O1").Value = "Duração",
+                    Observacao = linha.Cell("M1").GetValue<string>(),
+                    LinkBusca = linha.Cell("N1").GetValue<string>(),
+                    Duracao = linha.Cell("O1").GetValue<string>(),
                 };
 
                 dados.Add(dado);
@@ -138,29 +137,34 @@ namespace BotScanner._02___Utilidades.Relatorio
 
             int linhaVazia = worksheet.LastRowUsed().RowNumber() + 1;
 
-            worksheet.Cell("A" + linhaVazia).Value = novosDados.Seller;
-            worksheet.Cell("B" + linhaVazia).Value = novosDados.SKU_Parceiro;
-            worksheet.Cell("C" + linhaVazia).Value = novosDados.NomeItem;
-            worksheet.Cell("D" + linhaVazia).Value = novosDados.Status;
-            worksheet.Cell("D" + linhaVazia).Style.Fill.BackgroundColor = novosDados.Status ? XLColor.Green : XLColor.Red;
-            worksheet.Cell("D" + linhaVazia).Style.Font.FontColor = XLColor.White;
+            worksheet.Cell($"A{linhaVazia}").Value = novosDados.Seller;
+            worksheet.Cell($"B{linhaVazia}").Value = novosDados.SKU_Parceiro;
+            worksheet.Cell($"C{linhaVazia}").Value = novosDados.Status == "True" ? "Sucesso" : "Item divergente";
+            worksheet.Cell($"C{linhaVazia}").Style.Fill.BackgroundColor = novosDados.Status == "True" ? XLColor.Green : XLColor.Red;
+            worksheet.Cell($"D{linhaVazia}").Value = novosDados.ItemEncontrado;
 
-            worksheet.Cell("E" + linhaVazia).Value = novosDados.ObservacaoProduto;
-            worksheet.Cell("F" + linhaVazia).Value = novosDados.ObservacaoDescricao;
-            worksheet.Cell("G" + linhaVazia).Value = novosDados.ObservacoesGerais;
+            worksheet.Cell($"E{linhaVazia}").Value = novosDados.NomeEsperado;
+            worksheet.Cell($"F{linhaVazia}").Value = novosDados.NomeEncontrado;
+            worksheet.Cell($"G{linhaVazia}").Value = novosDados.DescricaoEsperada;
+            worksheet.Cell($"H{linhaVazia}").Value = novosDados.DescricaoEncontrada;
+            worksheet.Cell($"I{linhaVazia}").Value = novosDados.PrecoEsperado;
+            worksheet.Cell($"J{linhaVazia}").Value = novosDados.PrecoEncontrado;
+            worksheet.Cell($"K{linhaVazia}").Value = novosDados.CoresEsperadas;
+            worksheet.Cell($"L{linhaVazia}").Value = novosDados.CoresEncontradas;
 
-            if (!string.IsNullOrEmpty(novosDados.ObservacaoDescricao) && novosDados.Status == false)
-            {
-                worksheet.Cell("D" + linhaVazia).Value = "Produto inconsistente";
-                worksheet.Cell("D" + linhaVazia).Style.Fill.BackgroundColor = XLColor.Yellow;
-                worksheet.Cell("D" + linhaVazia).Style.Font.FontColor = XLColor.Black;
-                worksheet.Cell("G" + linhaVazia).Value = "Necessita análise manual";
-            }
-
-            worksheet.Cell("G" + linhaVazia).Value = UrlPesquisa;
+            worksheet.Cell($"M{linhaVazia}").Value = novosDados.Duracao;
+            worksheet.Cell($"N{linhaVazia}").Value = novosDados.Observacao;
+            worksheet.Cell($"O{linhaVazia}").Value = novosDados.LinkBusca;
+            
             workbook.Save();
+
+            
+            //worksheet.Cell($"D{linhaVazia}").Value = "Produto inconsistente";
+            //worksheet.Cell($"D{linhaVazia}").Style.Fill.BackgroundColor = XLColor.Yellow;
+            //worksheet.Cell($"D{linhaVazia}").Style.Font.FontColor = XLColor.Black;
+            //worksheet.Cell($"G{linhaVazia}").Value = "Necessita análise manual";
         }
 
     }
 }
-}
+
