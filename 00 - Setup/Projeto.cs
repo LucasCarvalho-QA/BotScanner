@@ -14,7 +14,7 @@ namespace BotScanner._00___Setup
         {
             ParametrosWebDriver parametros = new() 
             { 
-                Headless = false, 
+                Headless = true, 
                 TempoEspera = 5 
             };
 

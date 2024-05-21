@@ -29,9 +29,11 @@ namespace BotScanner._02___Utilidades.Relatorio
         public string Duracao { get; set; }
         public string Observacao { get; set; }
         public string LinkBusca { get; set; }
-        
+        public string LinkConectaLa { get; set; }
+
 
         public static List<PlanilhaPage> PlanilhaCarregada = new List<PlanilhaPage>();
+        public static string diretorioPlanilha = string.Empty;
 
         public List<PlanilhaPage> CarregarDadosPlanilha_PorSeller(string seller)
         {
@@ -49,6 +51,7 @@ namespace BotScanner._02___Utilidades.Relatorio
 
             var diretorioAtual = Directory.GetCurrentDirectory();
             var planilha = Path.Combine(diretorioAtual, nomeArquivoFormatado);
+            diretorioPlanilha = planilha;
 
             return new XLWorkbook(planilha);
         }
@@ -87,10 +90,11 @@ namespace BotScanner._02___Utilidades.Relatorio
                     CoresEsperadas = linha.Cell("K1").GetValue<string>(),
                     CoresEncontradas = linha.Cell("L1").GetValue<string>(),
 
-                    Observacao = linha.Cell("M1").GetValue<string>(),
-                    LinkBusca = linha.Cell("N1").GetValue<string>(),
-                    Duracao = linha.Cell("O1").GetValue<string>(),
-                };
+                    Observacao = linha.Cell("M1").GetValue<string>(),                    
+                    Duracao = linha.Cell("N1").GetValue<string>(),
+                    LinkBusca = linha.Cell("O1").GetValue<string>(),
+                    LinkConectaLa = linha.Cell("P1").GetValue<string>()
+              };
 
                 dados.Add(dado);
             }
@@ -118,9 +122,11 @@ namespace BotScanner._02___Utilidades.Relatorio
             worksheet.Cell("K1").Value = "Cores esperadas";
             worksheet.Cell("L1").Value = "Cores encontradas";
             
-            worksheet.Cell("M1").Value = "Observação";            
-            worksheet.Cell("N1").Value = "Link do produto";
-            worksheet.Cell("O1").Value = "Duração";
+            worksheet.Cell("M1").Value = "Observação";
+            worksheet.Cell("N1").Value = "Duração";
+            worksheet.Cell("O1").Value = "Link do produto";
+            worksheet.Cell("P1").Value = "Link ConectaLa";
+
 
             string nomeDoArquivo = $"{seller} - {localRunId}.xlsx";
             workbook.SaveAs(nomeDoArquivo);
@@ -144,25 +150,36 @@ namespace BotScanner._02___Utilidades.Relatorio
             worksheet.Cell($"D{linhaVazia}").Value = novosDados.ItemEncontrado;
 
             worksheet.Cell($"E{linhaVazia}").Value = novosDados.NomeEsperado;
+            worksheet.Cell($"E{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
             worksheet.Cell($"F{linhaVazia}").Value = novosDados.NomeEncontrado;
+            worksheet.Cell($"F{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.NomeEsperado, novosDados.NomeEncontrado);
+
             worksheet.Cell($"G{linhaVazia}").Value = novosDados.DescricaoEsperada;
+            worksheet.Cell($"G{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
             worksheet.Cell($"H{linhaVazia}").Value = novosDados.DescricaoEncontrada;
+            worksheet.Cell($"H{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.DescricaoEsperada, novosDados.DescricaoEncontrada);
+
             worksheet.Cell($"I{linhaVazia}").Value = novosDados.PrecoEsperado;
+            worksheet.Cell($"I{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
             worksheet.Cell($"J{linhaVazia}").Value = novosDados.PrecoEncontrado;
+            worksheet.Cell($"J{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.PrecoEsperado, novosDados.PrecoEncontrado);
+
             worksheet.Cell($"K{linhaVazia}").Value = novosDados.CoresEsperadas;
+            //worksheet.Cell($"K{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
             worksheet.Cell($"L{linhaVazia}").Value = novosDados.CoresEncontradas;
+            //worksheet.Cell($"L{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.CoresEsperadas, novosDados.CoresEncontradas);
 
             worksheet.Cell($"M{linhaVazia}").Value = novosDados.Duracao;
             worksheet.Cell($"N{linhaVazia}").Value = novosDados.Observacao;
             worksheet.Cell($"O{linhaVazia}").Value = novosDados.LinkBusca;
-            
-            workbook.Save();
+            worksheet.Cell($"P{linhaVazia}").Value = novosDados.LinkConectaLa;
 
-            
-            //worksheet.Cell($"D{linhaVazia}").Value = "Produto inconsistente";
-            //worksheet.Cell($"D{linhaVazia}").Style.Fill.BackgroundColor = XLColor.Yellow;
-            //worksheet.Cell($"D{linhaVazia}").Style.Font.FontColor = XLColor.Black;
-            //worksheet.Cell($"G{linhaVazia}").Value = "Necessita análise manual";
+            workbook.Save();
+        }
+
+        public static XLColor RetornarEstilo(string resultadoEsperado, string resultadoObtido)
+        {
+            return resultadoEsperado.Equals(resultadoObtido) ? XLColor.Green : XLColor.Red;
         }
 
     }

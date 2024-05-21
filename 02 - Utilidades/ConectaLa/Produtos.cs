@@ -33,6 +33,7 @@ namespace BotScanner._02___Utilidades.ConectaLa
     {
         public string sku { get; set; }
         public string name { get; set; }
+        public string product_id { get; set; }
         public string description { get; set; }
         public string status { get; set; }
         public float qty { get; set; }

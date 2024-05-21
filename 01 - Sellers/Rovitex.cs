@@ -50,7 +50,8 @@ namespace BotScanner._01___Sellers
 
         public static async Task FluxoRovitex(MainWindow main)
         {
-            string planilhaRelatorio = PlanilhaPage.GerarPlanilha("Rovitex");
+            string seller = "Rovitex";
+            string planilhaRelatorio = PlanilhaPage.GerarPlanilha(seller);
 
             PlanilhaPage produtoValidado = new();
 
@@ -58,29 +59,28 @@ namespace BotScanner._01___Sellers
 
             foreach (var produto in produtosCarregados.result.data.Take(7))
             {
-                string termoBusca = RealizarBusca(produto.product.sku);
+                RealizarBusca(produto.product.sku);
+                
                 AcessarProduto();
 
                 ValidarNome(produto.product.name, produtoValidado);
+                ValidarPreco(produto.product.price, produtoValidado);
+                ValidarDescricao(produto.product.description, produtoValidado);
 
-                produtoValidado.Seller = "Rovitex";
+                produtoValidado.Seller = seller;
                 produtoValidado.SKU_Parceiro = produto.product.sku;
-                produtoValidado.LinkBusca = termoBusca;
-
+                produtoValidado.LinkBusca = RetornarUrlSeller(produto.product.sku);
+                produtoValidado.LinkConectaLa = RetornarUrlConectaLa(produto.product.product_id);
                 produtoValidado.Status = status.ToString();
 
                 PlanilhaPage.AtualizarPlanilha(planilhaRelatorio, produtoValidado);
                 
                 await main.AtualizarLogAsync(produto.product.name, produtoValidado.Status);
-
-                // Adiciona um pequeno atraso para permitir a atualização da UI
+                
                 await Task.Delay(100);
             }
-
-            ValidarPreco();
-            ValidarDescricao();
-            ValidarPreco();
-            ValidarDescricao();
+            
+                                    
             ValidarCor();
 
             EncerrarNavegador();
@@ -92,7 +92,16 @@ namespace BotScanner._01___Sellers
             return sku.Replace("P_", "");
         }
 
-        
+        public static string RetornarUrlConectaLa(string produtoId)
+        {
+            return $"https://privaliamarketplace.conectala.com.br/app/products/update/{produtoId}";
+        }
+
+        public static string RetornarUrlSeller(string termoBusca)
+        {
+            return $"{urlBase}{FormatarSKU(termoBusca)}";
+        }
+
 
         public static string RealizarBusca(string termoBusca)
         {            
@@ -146,15 +155,66 @@ namespace BotScanner._01___Sellers
             }
         }
 
-        public static void ValidarPreco()
+        public static bool ValidarPreco(float precoReferencia, PlanilhaPage produtoValidado)
         {
+            string precoEncontradoProduto = string.Empty;
+            string precoEsperadoProduto = precoReferencia.ToString();
 
+            try
+            {                
+                string realInteiro = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[4]/div/div/div[2]/span/span/span/span[3]");
+                string realCentavos = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[4]/div/div/div[2]/span/span/span/span[5]");
+                precoEncontradoProduto = $"{realInteiro},{realCentavos}";
+
+                if (precoEncontradoProduto.Equals(precoEsperadoProduto))
+                    status = true;
+                else
+                    status = false;
+
+
+                produtoValidado.PrecoEncontrado = precoEncontradoProduto.Replace(",",".");
+                produtoValidado.PrecoEsperado = precoEsperadoProduto.Replace(",", ".");
+
+                return status;
+            }
+
+            catch (Exception e)
+            {
+                produtoValidado.PrecoEncontrado = "Preço não correspondente";
+                produtoValidado.PrecoEsperado = precoEsperadoProduto.Replace(",", ".");
+                return status = false;
+            }
         }
 
-        public static void ValidarDescricao()
+        public static bool ValidarDescricao(string descricaoProdutoReferencia, PlanilhaPage produtoValidado)
         {
+            string descricaoEncontradoProduto = string.Empty;
+            string descricaoEsperadoProduto = StringFormatter.FormatarTexto_Descricao(descricaoProdutoReferencia);
 
+            try
+            {
+                descricaoEncontradoProduto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[12]/div[1]/div/div/div/div/div");
+
+                if (descricaoEncontradoProduto.Equals(descricaoProdutoReferencia))
+                    status = true;
+                else
+                    status = false;
+
+
+                produtoValidado.DescricaoEncontrada = descricaoEncontradoProduto;
+                produtoValidado.DescricaoEsperada = descricaoEsperadoProduto;
+
+                return status;
+            }
+
+            catch (Exception e)
+            {
+                produtoValidado.DescricaoEncontrada = "Descrição não correspondente";
+                produtoValidado.DescricaoEsperada = descricaoEsperadoProduto;
+                return status = false;
+            }
         }
+
 
         public static void ValidarCor() 
         { 

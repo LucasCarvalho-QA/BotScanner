@@ -2,8 +2,13 @@
 using BotScanner._01___Sellers;
 using BotScanner._02___Utilidades;
 using BotScanner._02___Utilidades.ConectaLa;
+using BotScanner._02___Utilidades.Relatorio;
+using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
@@ -85,14 +90,11 @@ namespace BotScanner
         }
 
         public async Task CalcularPrevisaoTermino()
-        {
-            // Determine o número total de itens a serem processados
+        {            
             int totalItems = produtosSelecionados.result.data.Count;
-
-            // Estime o tempo total necessário (10 segundos por item)
+            
             TimeSpan estimatedTime = TimeSpan.FromSeconds(totalItems * 10);
-
-            // Calcule a previsão de término
+            
             _endTime = _startTime.Add(estimatedTime);
             txtPrevisaoTermino.Text = _endTime.ToString();
         }
@@ -110,14 +112,19 @@ namespace BotScanner
             switch (seller)
             {
                 case "Rovitex":
+                    await AtualizarLogAsync_Mensageria($"Selecionar {seller}");
+                    await AtualizarLogAsync_Mensageria($"Preparando ambiente");
                     Rovitex rovitex = new();
                     MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-                    await rovitex.CarregarProdutosAsync(); // Chamada assíncrona para carregar produtos
+                    await AtualizarLogAsync_Mensageria($"Carregando produtos");
+                    await rovitex.CarregarProdutosAsync();
+                    await AtualizarLogAsync_Mensageria($"Produtos do seller {seller} carregados com sucesso");
                     await AtribuirQuantidadeItens();
-                    await PopularVariaveisIniciais(); // Chamada assíncrona
+                    await PopularVariaveisIniciais();
                     await CalcularPrevisaoTermino();
+                    await AtualizarLogAsync_Mensageria($"Iniciando fluxo de validação");
                     await Rovitex.FluxoRovitex(mainWindow);
-                    
+                    await AtualizarLogAsync_Mensageria($"Fluxo de validação encerrado");
                     break;
                 default:
                     break;
@@ -174,9 +181,6 @@ namespace BotScanner
             await AtribuirItensValidados();
         }
 
-
-
-
         public async Task AtualizarLogAsync(string name, string status)
         {
             status = status == "True" ? "OK" : "NOK";
@@ -193,6 +197,17 @@ namespace BotScanner
             else
                 await AtribuirItensNotOK();                        
         }
+
+        public async Task AtualizarLogAsync_Mensageria(string mensagem)
+        {            
+            Dispatcher.Invoke(() =>
+            {
+                ViewModel.LogText += $"\n{mensagem}\n"; 
+            });
+
+            Thread.Sleep(700);
+        }
+
 
 
         private void CheckBox_Checked(object sender, RoutedEventArgs e)
@@ -214,13 +229,32 @@ namespace BotScanner
             if (cmbMarcas.SelectedItem != null)
             {
                 string selectedBrand = cmbMarcas.SelectedItem.ToString();
-                //MessageBox.Show("Marca selecionada: " + selectedBrand);
             }
         }
 
         private void btnBaixarLog_Click(object sender, RoutedEventArgs e)
         {
-
+            try
+            {
+                var caminhoPlanilha = PlanilhaPage.diretorioPlanilha;
+                
+                if (File.Exists(caminhoPlanilha))
+                {                    
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = caminhoPlanilha,
+                        UseShellExecute = true
+                    });
+                }
+                else
+                {
+                    MessageBox.Show("Arquivo não encontrado.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao abrir a planilha: {ex.Message}");
+            }
         }
     }
 }

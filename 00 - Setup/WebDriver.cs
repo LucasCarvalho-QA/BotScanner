@@ -25,18 +25,19 @@ namespace BotScanner._00___Setup
 
         public static void ConfigurarWebDriverChrome(ParametrosWebDriver parametros)
         {
-            ChromeOptions? chromeOptions = new();
-            chromeOptions.AddArguments("--start-maximized");
-            chromeOptions.AddArguments("ignore-certificate-errors");
-
-            parametros.Headless = true;
+            ChromeOptions chromeOptions = new();
+            chromeOptions.AddArguments("--start-maximized", "ignore-certificate-errors");
 
             if (parametros.Headless)
                 chromeOptions.AddArgument("--headless=new");
 
-            driver = new ChromeDriver(chromeOptions);
+            var service = ChromeDriverService.CreateDefaultService();
+            service.HideCommandPromptWindow = true;  // Suprimir a janela do console
+
+            driver = new ChromeDriver(service, chromeOptions);
             wait = new WebDriverWait(driver, TimeSpan.FromSeconds(parametros.TempoEspera));
         }
+
 
         public static void EncerrarWebDriver() 
         {
