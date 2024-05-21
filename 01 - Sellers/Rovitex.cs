@@ -21,6 +21,7 @@ namespace BotScanner._01___Sellers
         internal static string rovitextEndpoint = "Api/V1/Products/list?store=78&status=enabled";
         internal static Produtos produtosCarregados = new();
         public static bool status;
+        public static List<bool> listaDeStatus = new();
 
         public Rovitex()
         {
@@ -57,27 +58,29 @@ namespace BotScanner._01___Sellers
 
             IniciarNavegador();
 
-            foreach (var produto in produtosCarregados.result.data.Take(7))
+            foreach (var produto in produtosCarregados.result.data)//.Take(7))
             {
                 RealizarBusca(produto.product.sku);
                 
                 AcessarProduto();
 
-                ValidarNome(produto.product.name, produtoValidado);
-                ValidarPreco(produto.product.price, produtoValidado);
-                ValidarDescricao(produto.product.description, produtoValidado);
+                var nome = ValidarNome(produto.product.name, produtoValidado);
+                var preco = ValidarPreco(produto.product.price, produtoValidado);
+                var desc = ValidarDescricao(produto.product.description, produtoValidado);
 
                 produtoValidado.Seller = seller;
                 produtoValidado.SKU_Parceiro = produto.product.sku;
                 produtoValidado.LinkBusca = RetornarUrlSeller(produto.product.sku);
                 produtoValidado.LinkConectaLa = RetornarUrlConectaLa(produto.product.product_id);
-                produtoValidado.Status = status.ToString();
+                produtoValidado.Status = RetornarStatusConsolidado(listaDeStatus).ToString();
 
                 PlanilhaPage.AtualizarPlanilha(planilhaRelatorio, produtoValidado);
                 
                 await main.AtualizarLogAsync(produto.product.name, produtoValidado.Status);
                 
                 await Task.Delay(100);
+
+                listaDeStatus = new();
             }
             
                                     
@@ -86,6 +89,13 @@ namespace BotScanner._01___Sellers
             EncerrarNavegador();
         }
 
+        public static bool RetornarStatusConsolidado(List<bool> listaStatus)
+        {
+            if (listaStatus.Contains(false))
+                return false;
+            else
+                return true;
+        }
 
         public static string FormatarSKU(string sku)
         {
@@ -137,13 +147,14 @@ namespace BotScanner._01___Sellers
 
                 if (nomeEncontradoProduto.Equals(nomeProdutoReferencia))
                     status = true;
-                else                
+                else
                     status = false;
                 
 
                 produtoValidado.NomeEncontrado = nomeEncontradoProduto;
                 produtoValidado.NomeEsperado = nomeEsperadoProduto;
 
+                listaDeStatus.Add(status);
                 return status;
             }
 
@@ -151,6 +162,7 @@ namespace BotScanner._01___Sellers
             {
                 produtoValidado.NomeEncontrado = "Produto não encontrado";
                 produtoValidado.NomeEsperado = nomeEsperadoProduto;
+                listaDeStatus.Add(status);
                 return status = false;                                
             }
         }
@@ -175,6 +187,7 @@ namespace BotScanner._01___Sellers
                 produtoValidado.PrecoEncontrado = precoEncontradoProduto.Replace(",",".");
                 produtoValidado.PrecoEsperado = precoEsperadoProduto.Replace(",", ".");
 
+                listaDeStatus.Add(status);
                 return status;
             }
 
@@ -182,6 +195,7 @@ namespace BotScanner._01___Sellers
             {
                 produtoValidado.PrecoEncontrado = "Preço não correspondente";
                 produtoValidado.PrecoEsperado = precoEsperadoProduto.Replace(",", ".");
+                listaDeStatus.Add(status);
                 return status = false;
             }
         }
@@ -195,7 +209,7 @@ namespace BotScanner._01___Sellers
             {
                 descricaoEncontradoProduto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[12]/div[1]/div/div/div/div/div");
 
-                if (descricaoEncontradoProduto.Equals(descricaoProdutoReferencia))
+                if (descricaoEncontradoProduto.Equals(descricaoEsperadoProduto))
                     status = true;
                 else
                     status = false;
@@ -204,6 +218,7 @@ namespace BotScanner._01___Sellers
                 produtoValidado.DescricaoEncontrada = descricaoEncontradoProduto;
                 produtoValidado.DescricaoEsperada = descricaoEsperadoProduto;
 
+                listaDeStatus.Add(status);
                 return status;
             }
 
@@ -211,6 +226,7 @@ namespace BotScanner._01___Sellers
             {
                 produtoValidado.DescricaoEncontrada = "Descrição não correspondente";
                 produtoValidado.DescricaoEsperada = descricaoEsperadoProduto;
+                listaDeStatus.Add(status);
                 return status = false;
             }
         }

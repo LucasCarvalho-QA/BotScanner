@@ -59,10 +59,11 @@ namespace BotScanner._02___Utilidades.Relatorio
         public static void MoverArquivo(string nomeArquivo)
         {
             var diretorioAtual = Path.Combine(Environment.CurrentDirectory, nomeArquivo);
-            var diretorioDestino = Path.Combine(Environment.CurrentDirectory, $@"05 - Dados\\{nomeArquivo}").Replace("\\\\","\\");
+            var diretorioDestino = Path.Combine(Environment.CurrentDirectory, $@"05 - Dados\\{nomeArquivo}").Replace("\\\\", "\\");
 
             File.Move(diretorioAtual, diretorioDestino);
         }
+
 
         public static List<PlanilhaPage> CarregarDadosDaPlanilha(string nomeArquivo)
         {
