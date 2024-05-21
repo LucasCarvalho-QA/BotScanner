@@ -38,9 +38,11 @@ namespace BotScanner._01___Sellers
             parametrosRovitex.Endpoint = rovitextEndpoint;
 
             string response = await Rest.RealizarChamadaAPIAsync(parametrosRovitex);
-            produtosCarregados = JsonConvert.DeserializeObject<Produtos>(response);
-
-            MainWindow.produtosSelecionados = produtosCarregados;            
+            var produtosDesserializados = JsonConvert.DeserializeObject<Produtos>(response);                        
+            
+            produtosCarregados = produtosDesserializados;            
+            MainWindow.quantidadeTotalItens = produtosCarregados.result.data.Count;
+            MainWindow.produtosSelecionados = produtosCarregados;
 
             return produtosCarregados;
         }
@@ -49,15 +51,12 @@ namespace BotScanner._01___Sellers
         public static async Task FluxoRovitex(MainWindow main)
         {
             string planilhaRelatorio = PlanilhaPage.GerarPlanilha("Rovitex");
-            var produtosCarregadosViaAPI = produtosCarregados.result.data.Take(50);
-
-            MainWindow.quantidadeTotalItens += produtosCarregadosViaAPI.Count();
 
             PlanilhaPage produtoValidado = new();
 
             IniciarNavegador();
 
-            foreach (var produto in produtosCarregadosViaAPI)
+            foreach (var produto in produtosCarregados.result.data.Take(7))
             {
                 string termoBusca = RealizarBusca(produto.product.sku);
                 AcessarProduto();

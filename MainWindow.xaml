@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:BotScanner"
         xmlns:VisualBasic="clr-namespace:Microsoft.VisualBasic;assembly=Microsoft.VisualBasic.Core" x:Class="BotScanner.MainWindow"
         mc:Ignorable="d"
-        Title="Bot Scanner" Height="450" Width="800">
+        Title="Bot Scanner" Height="450" Width="900">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="41*"/>
@@ -14,17 +14,17 @@
             <ColumnDefinition Width="900*"/>
         </Grid.ColumnDefinitions>
         <Button x:Name="btnIniciar" Content="Iniciar" HorizontalAlignment="Left" Margin="19,201,0,0" VerticalAlignment="Top" Click="Button_Click" Width="60" Height="29" FontWeight="Bold" RenderTransformOrigin="-0.232,0.549" Grid.ColumnSpan="3"/>
-        <Image x:Name="logoAuditeste" Margin="561,30,48,382" Source="/rsz_2logo-auditeste.png" Stretch="Fill" Grid.Column="2"/>
-        <Label x:Name="titulo" Content="Bot Scanner" HorizontalAlignment="Left" Height="60" Margin="236,3,0,0" VerticalAlignment="Top" Width="184" FontSize="30" FontWeight="Bold" Grid.Column="2"/>
-        <TextBox x:Name="txtLog" HorizontalAlignment="Left" Margin="183,112,0,0" TextWrapping="Wrap" Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="300" Height="175" Grid.Column="2"/>
-        <Button x:Name="btnBaixarLog" Content="Baixar Log" HorizontalAlignment="Left" Margin="580,304,0,0" VerticalAlignment="Top" Click="Button_Click" Width="85" Height="28" FontWeight="Bold" RenderTransformOrigin="-0.232,0.549" Grid.Column="2"/>
+        <Image x:Name="logoAuditeste" Margin="606,30,3,382" Source="/rsz_2logo-auditeste.png" Stretch="Fill" Grid.Column="2"/>
+        <Label x:Name="titulo" Content="Bot Scanner" HorizontalAlignment="Left" Height="60" Margin="254,2,0,0" VerticalAlignment="Top" Width="184" FontSize="30" FontWeight="Bold" Grid.Column="2"/>
+        <TextBox x:Name="txtLog" HorizontalAlignment="Left" Margin="183,112,0,0" TextWrapping="Wrap" Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Top" Width="362" Height="175" Grid.Column="2"/>
+        <Button x:Name="btnBaixarLog" Content="Baixar Log" HorizontalAlignment="Left" Margin="625,304,0,0" VerticalAlignment="Top" Width="85" Height="28" FontWeight="Bold" RenderTransformOrigin="-0.232,0.549" Grid.Column="2" Click="btnBaixarLog_Click"/>
         <ComboBox x:Name="cmbMarcas" HorizontalAlignment="Left" Margin="19,112,0,0" VerticalAlignment="Top" Width="180" Grid.ColumnSpan="3" SelectionChanged="cmbMarcas_SelectionChanged"/>
         <Label x:Name="lblTituloComboMarcas" Content="Selecione uma Marca" HorizontalAlignment="Left" Margin="19,77,0,0" VerticalAlignment="Top" Grid.ColumnSpan="3"/>
         <Label x:Name="lblTituloLog" Content="Progresso" HorizontalAlignment="Left" Margin="183,77,0,0" VerticalAlignment="Top" Grid.Column="2"/>
-        <Label x:Name="lblItensValidados" Content="Itens validados:" HorizontalAlignment="Left" Margin="515,108,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
-        <Label x:Name="lblQtdItensOK" Content="Itens OK:" HorizontalAlignment="Left" Margin="515,139,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
-        <Label x:Name="lblItensNaoEncontrados" Content="Itens não encontrados:" HorizontalAlignment="Left" Margin="515,175,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
-        <Label x:Name="lblTempoDecorrido" Content="Tempo decorrido:" HorizontalAlignment="Left" Margin="515,241,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
+        <Label x:Name="lblItensValidados" Content="Itens validados:" HorizontalAlignment="Left" Margin="560,108,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
+        <Label x:Name="lblQtdItensOK" Content="Itens OK:" HorizontalAlignment="Left" Margin="560,139,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
+        <Label x:Name="lblItensNaoEncontrados" Content="Itens não encontrados:" HorizontalAlignment="Left" Margin="560,175,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
+        <Label x:Name="lblTempoDecorrido" Content="Tempo decorrido:" HorizontalAlignment="Left" Margin="560,241,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
         <Label x:Name="lblQuantidadeItens" Content="Quantidade total de itens:" HorizontalAlignment="Left" Margin="183,300,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
         <Label x:Name="lblItensRestantes" Content="Itens restantes:" HorizontalAlignment="Left" Margin="183,326,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
         <Label x:Name="lblPrevisaoTermino" Content="Previsão de término:" HorizontalAlignment="Left" Margin="183,352,0,0" VerticalAlignment="Top" Grid.Column="2" FontWeight="Bold"/>
@@ -32,16 +32,16 @@
         <Label x:Name="lblDataInicio" Content="Data/Hora inicial:" HorizontalAlignment="Left" Margin="19,250,0,0" VerticalAlignment="Top" Grid.ColumnSpan="3" FontWeight="Bold"/>
         <TextBlock x:Name="txtDataHoraAtual" HorizontalAlignment="Left" Margin="19,281,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top" RenderTransformOrigin="1.602,-1.567" Width="83" Grid.ColumnSpan="3"/>
         <Image x:Name="privalia_logo" HorizontalAlignment="Left" Height="65" Margin="19,0,0,0" VerticalAlignment="Top" Width="146" Source="/rsz_logo-privalia.png" Grid.ColumnSpan="3"/>
-        <Image Grid.Column="2" HorizontalAlignment="Left" Height="35" Margin="524,20,0,0" VerticalAlignment="Top" Width="177" Source="/rsz_logo-auditeste.png"/>
+        <Image Grid.Column="2" HorizontalAlignment="Left" Height="35" Margin="569,20,0,0" VerticalAlignment="Top" Width="177" Source="/rsz_logo-auditeste.png"/>
         <TextBlock x:Name="txtQuantidadeTotalItens" Grid.Column="2" HorizontalAlignment="Left" Margin="339,304,0,0" TextWrapping="Wrap" Text ="Valor pendente" VerticalAlignment="Top"/>
         <TextBlock x:Name="txtItensPendentesValidacao" Grid.Column="2" HorizontalAlignment="Left" Margin="277,331,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top" Width="120"/>
         <TextBlock x:Name="txtPrevisaoTermino" Grid.Column="2" HorizontalAlignment="Left" Margin="306,358,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
-        <TextBlock x:Name="txtItensValidados" Grid.Column="2" HorizontalAlignment="Left" Margin="616,113,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
-        <TextBlock x:Name="txtItensValidadosOK" Grid.Column="2" HorizontalAlignment="Left" Margin="575,144,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
-        <TextBlock x:Name="txtItensNaoEncontrados" Grid.Column="2" HorizontalAlignment="Left" Margin="654,180,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
-        <Label x:Name="lblItensDivergentes" Grid.Column="2" Content="Itens divergentes:" HorizontalAlignment="Left" Margin="515,206,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
-        <TextBlock x:Name="txtItensDivergentes" Grid.Column="2" HorizontalAlignment="Left" Margin="627,211,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
-        <TextBlock x:Name="txtTempoDecorrido" Grid.Column="2" HorizontalAlignment="Left" Margin="625,246,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
+        <TextBlock x:Name="txtItensValidados" Grid.Column="2" HorizontalAlignment="Left" Margin="661,113,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
+        <TextBlock x:Name="txtItensValidadosOK" Grid.Column="2" HorizontalAlignment="Left" Margin="620,144,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
+        <TextBlock x:Name="txtItensNaoEncontrados" Grid.Column="2" HorizontalAlignment="Left" Margin="699,180,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
+        <Label x:Name="lblItensDivergentes" Grid.Column="2" Content="Itens divergentes:" HorizontalAlignment="Left" Margin="560,206,0,0" VerticalAlignment="Top" FontWeight="Bold"/>
+        <TextBlock x:Name="txtItensDivergentes" Grid.Column="2" HorizontalAlignment="Left" Margin="672,211,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
+        <TextBlock x:Name="txtTempoDecorrido" Grid.Column="2" HorizontalAlignment="Left" Margin="670,246,0,0" TextWrapping="Wrap" Text="Valor pendente" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>

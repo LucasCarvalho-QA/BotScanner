@@ -21,7 +21,7 @@ namespace BotScanner._02___Utilidades.ConectaLa
         public int registers_count { get; set; }
         public float pages_count { get; set; }
         public float page { get; set; }
-        public Datum[] data { get; set; }
+        public List<Datum>? data { get; set; }
     }
 
     public class Datum
@@ -46,9 +46,9 @@ namespace BotScanner._02___Utilidades.ConectaLa
         public string brand { get; set; }
         public string ean { get; set; }
         public object ncm { get; set; }
-        public Category[] categories { get; set; }
-        public string[] images { get; set; }
-        public string[] variation_attributes { get; set; }
+        public List<Category> categories { get; set; }
+        public List<string> images { get; set; }
+        public List<string> variation_attributes { get; set; }
     }
 
     public class Category

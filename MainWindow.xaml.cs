@@ -2,6 +2,7 @@
 using BotScanner._01___Sellers;
 using BotScanner._02___Utilidades;
 using BotScanner._02___Utilidades.ConectaLa;
+using DocumentFormat.OpenXml.Drawing;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -18,7 +19,7 @@ using System.Xml.Linq;
 
 namespace BotScanner
 {
-    /// <summary>
+    /// <summary>s
     /// Interaction logic for MainWindow.xaml
     /// </summary>
 
@@ -49,6 +50,8 @@ namespace BotScanner
     public partial class MainWindow : Window
     {
         public MainViewModel ViewModel { get; set; }
+        private DateTime _startTime;
+        private DateTime _endTime;
 
         public MainWindow()
         {
@@ -63,7 +66,7 @@ namespace BotScanner
         public static int itensValidados = 0;
         public static int itensValidadosOK = 1;
         public static int itensValidadosNOK = 1;
-        public static float quantidadeTotalItens = 0;
+        public static int quantidadeTotalItens = 0;
 
         private async void Button_Click(object sender, RoutedEventArgs e)
         {
@@ -75,13 +78,31 @@ namespace BotScanner
 
         public async Task IniciarProjeto(string seller)
         {
-            txtDataHoraAtual.Text = DateTime.Now.ToString();
+            _startTime = DateTime.Now;
+            txtDataHoraAtual.Text = _startTime.ToString();            
+
             await AcessarFluxoSeller(seller);
-        }//txtPrevisaoTermino
+        }
+
+        public async Task CalcularPrevisaoTermino()
+        {
+            // Determine o número total de itens a serem processados
+            int totalItems = produtosSelecionados.result.data.Count;
+
+            // Estime o tempo total necessário (10 segundos por item)
+            TimeSpan estimatedTime = TimeSpan.FromSeconds(totalItems * 10);
+
+            // Calcule a previsão de término
+            _endTime = _startTime.Add(estimatedTime);
+            txtPrevisaoTermino.Text = _endTime.ToString();
+        }
 
         public async Task FinalizarProjeto()
         {
-            txtPrevisaoTermino.Text = DateTime.Now.ToString();
+            _endTime = DateTime.Now;            
+            TimeSpan duration = _endTime - _startTime;
+            txtTempoDecorrido.Text = duration.ToString(@"hh\:mm\:ss");
+
         }
 
         public async Task AcessarFluxoSeller(string seller)
@@ -91,9 +112,12 @@ namespace BotScanner
                 case "Rovitex":
                     Rovitex rovitex = new();
                     MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
-                    await rovitex.CarregarProdutosAsync(); // Chamada assíncrona para carregar produtos                    
+                    await rovitex.CarregarProdutosAsync(); // Chamada assíncrona para carregar produtos
+                    await AtribuirQuantidadeItens();
                     await PopularVariaveisIniciais(); // Chamada assíncrona
-                    await Rovitex.FluxoRovitex(mainWindow);                    
+                    await CalcularPrevisaoTermino();
+                    await Rovitex.FluxoRovitex(mainWindow);
+                    
                     break;
                 default:
                     break;
@@ -103,7 +127,8 @@ namespace BotScanner
 
 
         public async Task AtribuirQuantidadeItens()
-        {
+        {          
+
             await Dispatcher.InvokeAsync(() =>
             {
                 txtQuantidadeTotalItens.Text = quantidadeTotalItens.ToString();
@@ -112,8 +137,7 @@ namespace BotScanner
 
 
         public async Task AtribuirItensRestantes()
-        {
-            var oi = quantidadeTotalItens;
+        {            
             await Dispatcher.InvokeAsync(() =>
             {
                 txtItensPendentesValidacao.Text = quantidadeTotalItens--.ToString();
@@ -145,10 +169,7 @@ namespace BotScanner
         }
 
         public async Task PopularVariaveisIniciais()
-        {
-            quantidadeTotalItens = produtosSelecionados.result.registers_count;
-
-            await AtribuirQuantidadeItens();
+        {            
             await AtribuirItensRestantes();
             await AtribuirItensValidados();
         }
@@ -163,7 +184,7 @@ namespace BotScanner
             {
                 ViewModel.LogText += $"'{name}': {status}\n"; // Adiciona uma nova linha para cada item validado
             });
-
+                        
             await AtribuirItensValidados();
             await AtribuirItensRestantes();
 
@@ -197,6 +218,9 @@ namespace BotScanner
             }
         }
 
-     
+        private void btnBaixarLog_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
