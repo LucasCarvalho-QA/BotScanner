@@ -5,6 +5,7 @@ using OpenQA.Selenium.Support.UI;
 using SeleniumExtras.WaitHelpers;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -52,8 +53,6 @@ namespace BotScanner._00___Setup
 
         public static IWebElement BuscarElemento(By buscarPor)
         {
-            IWebElement elemento = null;
-
             try
             {
                 return wait.Until(ExpectedConditions.ElementToBeClickable(buscarPor));
@@ -61,6 +60,20 @@ namespace BotScanner._00___Setup
             catch (Exception)
             {
                
+
+                return null;
+            }
+        }
+
+        public static ReadOnlyCollection<IWebElement> BuscarListaElementos(By buscarPor)
+        {
+            try
+            {
+                return wait.Until(ExpectedConditions.PresenceOfAllElementsLocatedBy(buscarPor));
+            }
+            catch (Exception)
+            {
+
 
                 return null;
             }
@@ -81,6 +94,16 @@ namespace BotScanner._00___Setup
         public static IWebElement BuscarElemento_PorXpath(string xpath)
         {
             return BuscarElemento(By.XPath(xpath));
+        }
+
+        public static IWebElement BuscarElemento_PorCssSelector(string cssSelector)
+        {
+            return BuscarElemento(By.CssSelector(cssSelector));
+        }
+
+        public static ReadOnlyCollection<IWebElement> BuscarListaDeElementos_PorCssSelector(string cssSelector)
+        {
+            return BuscarListaElementos(By.CssSelector(cssSelector));
         }
 
         public static IWebElement BuscarElemento_PorID(string id)

@@ -3,6 +3,7 @@ using BotScanner._02___Utilidades;
 using BotScanner._02___Utilidades.ConectaLa;
 using BotScanner._02___Utilidades.Relatorio;
 using Newtonsoft.Json;
+using OpenQA.Selenium;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -54,19 +55,24 @@ namespace BotScanner._01___Sellers
             string seller = "Rovitex";
             string planilhaRelatorio = PlanilhaPage.GerarPlanilha(seller);
 
-            PlanilhaPage produtoValidado = new();
+            
 
             IniciarNavegador();
 
-            foreach (var produto in produtosCarregados.result.data)//.Take(7))
+            //Ajuste de quantidade de produtos
+            foreach (var produto in produtosCarregados.result.data.Take(10))
             {
+                PlanilhaPage produtoValidado = new();
+
                 RealizarBusca(produto.product.sku);
+                //RealizarBusca("61127");
                 
                 AcessarProduto();
 
                 var nome = ValidarNome(produto.product.name, produtoValidado);
                 var preco = ValidarPreco(produto.product.price, produtoValidado);
                 var desc = ValidarDescricao(produto.product.description, produtoValidado);
+                ValidarCor(produto.product.variations, produtoValidado);
 
                 produtoValidado.Seller = seller;
                 produtoValidado.SKU_Parceiro = produto.product.sku;
@@ -84,7 +90,7 @@ namespace BotScanner._01___Sellers
             }
             
                                     
-            ValidarCor();
+            
 
             EncerrarNavegador();
         }
@@ -193,7 +199,7 @@ namespace BotScanner._01___Sellers
 
             catch (Exception e)
             {
-                produtoValidado.PrecoEncontrado = "Preço não correspondente";
+                produtoValidado.PrecoEncontrado = "Produto não encontrado";
                 produtoValidado.PrecoEsperado = precoEsperadoProduto.Replace(",", ".");
                 listaDeStatus.Add(status);
                 return status = false;
@@ -224,7 +230,7 @@ namespace BotScanner._01___Sellers
 
             catch (Exception e)
             {
-                produtoValidado.DescricaoEncontrada = "Descrição não correspondente";
+                produtoValidado.DescricaoEncontrada = "Produto não encontrado";
                 produtoValidado.DescricaoEsperada = descricaoEsperadoProduto;
                 listaDeStatus.Add(status);
                 return status = false;
@@ -232,9 +238,41 @@ namespace BotScanner._01___Sellers
         }
 
 
-        public static void ValidarCor() 
-        { 
-        
+        public static bool ValidarCor(List<Variation> corProdutoReferencia, PlanilhaPage produtoValidado) 
+        {
+            string corEncontradaProduto = string.Empty;
+            string corEsperadaProduto = "";
+
+            
+
+            var oi = BuscarListaDeElementos_PorCssSelector(".vtex-store-components-3-x-skuSelectorItem");
+            var dois = BuscarElemento_PorCssSelector(".vtex-store-components-3-x-skuSelectorItem");
+
+
+            try
+            {
+                corEncontradaProduto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[3]/div/div[2]/div/section/div/div[2]/div/div/div/div[8]/div/div/div/div/div[1]/div/div[1]/span[3]");
+
+                if (corEncontradaProduto.Equals(corEsperadaProduto))
+                    status = true;
+                else
+                    status = false;
+
+
+                produtoValidado.CoresEncontradas = corEncontradaProduto;
+                produtoValidado.CoresEsperadas = corEsperadaProduto;
+
+                listaDeStatus.Add(status);
+                return status;
+            }
+
+            catch (Exception e)
+            {
+                produtoValidado.CoresEncontradas= "Produto não encontrado";
+                produtoValidado.CoresEsperadas = corEsperadaProduto;
+                listaDeStatus.Add(status);
+                return status = false;
+            }
         }
 
         public static void ValidarTamanho()

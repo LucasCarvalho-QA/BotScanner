@@ -183,10 +183,12 @@ namespace BotScanner
 
         public async Task AtualizarLogAsync(string name, string status)
         {
+            string datetime = DateTime.Now.ToString("HH:mm:ss");
+
             status = status == "True" ? "OK" : "NOK";
             Dispatcher.Invoke(() =>
             {
-                ViewModel.LogText += $"'{name}': {status}\n"; // Adiciona uma nova linha para cada item validado
+                ViewModel.LogText += $"'[{datetime}] {name}': {status}\n"; // Adiciona uma nova linha para cada item validado
             });
                         
             await AtribuirItensValidados();
@@ -199,10 +201,12 @@ namespace BotScanner
         }
 
         public async Task AtualizarLogAsync_Mensageria(string mensagem)
-        {            
+        {
+            string datetime = DateTime.Now.ToString("HH:mm:ss");
+
             Dispatcher.Invoke(() =>
             {
-                ViewModel.LogText += $"\n{mensagem}\n"; 
+                ViewModel.LogText += $"\n[{datetime}] {mensagem}\n"; 
             });
 
             Thread.Sleep(700);

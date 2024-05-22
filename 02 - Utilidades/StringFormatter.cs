@@ -21,10 +21,10 @@ namespace BotScanner._02___Utilidades
 
         public static string FormatarTexto_Descricao(string texto)
         {
-            texto = EliminarQuebrasDeLinha(texto);
-            texto = EliminarEspacoDuplo(texto);
+            string textoSemQebras = EliminarQuebrasDeLinha(texto);
+            string textoFormatado = EliminarEspacoDuplo(textoSemQebras);
 
-            return texto;
+            return textoFormatado;
         }
 
 
