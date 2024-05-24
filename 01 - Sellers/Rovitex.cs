@@ -7,6 +7,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -57,34 +58,53 @@ namespace BotScanner._01___Sellers
             string seller = "Rovitex";
             string planilhaRelatorio = PlanilhaPage.GerarPlanilha(seller);
 
-            
 
+            
             IniciarNavegador();
 
             //Ajuste de quantidade de produtos
             foreach (var produto in produtosCarregados.result.data.Take(100))
             {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.Start();
+
                 PlanilhaPage produtoValidado = new();
 
                 RealizarBusca(produto.product.sku);
-                //RealizarBusca("61127");
-                
-                AcessarProduto();
+
+                bool produtoEncontrado = AcessarProduto(produto.product.name);
 
                 produtoValidado.Seller = seller;
                 produtoValidado.SKU_Parceiro = produto.product.sku;
                 produtoValidado.LinkBusca = RetornarUrlSeller(produto.product.sku);
                 produtoValidado.LinkConectaLa = RetornarUrlConectaLa(produto.product.product_id);
 
-                var nome = ValidarNome(produto.product.name, produtoValidado);
-                var preco = ValidarPreco(produto.product.price, produtoValidado);
-                var desc = ValidarDescricao(produto.product.description, produtoValidado);
-                
-                var cor = ValidarCor(produto.product.variations[0].variant[1].color, produto.product.name, produtoValidado);
-                var tamanho = ValidarTamanho(produto.product.variations, produtoValidado);
+                if (produtoEncontrado)
+                {
+                    var nome = ValidarNome(produto.product.name, produtoValidado);
+                    var preco = ValidarPreco(produto.product.price, produtoValidado);
+                    var desc = ValidarDescricao(produto.product.description, produtoValidado);
+                    var cor = ValidarCor(produto.product.variations[0].variant[1].color, produto.product.name, produtoValidado);
+                    var tamanho = ValidarTamanho(produto.product.variations, produtoValidado);
+                    produtoValidado.Status = RetornarStatusConsolidado(listaDeStatus).ToString();
+                }
+                else
+                {
+                    produtoValidado.NomeEsperado = produto.product.name;
+                    produtoValidado.NomeEncontrado = "";                    
+                    produtoValidado.PrecoEncontrado = "";
+                    produtoValidado.PrecoEsperado = "";
+                    produtoValidado.DescricaoEncontrada = "";
+                    produtoValidado.DescricaoEsperada = "";
+                    produtoValidado.CoresEncontradas = "";
+                    produtoValidado.CoresEsperadas = "";
+                    produtoValidado.TamanhoEncontrado = "";
+                    produtoValidado.TamanhoEsperado = "";
+                    produtoValidado.Status = produtoEncontrado.ToString();
+                }                
 
-
-                produtoValidado.Status = RetornarStatusConsolidado(listaDeStatus).ToString();
+                stopwatch.Stop();
+                produtoValidado.Duracao = $"{Math.Ceiling(stopwatch.Elapsed.TotalSeconds * 10) / 10} segundos";                
 
                 PlanilhaPage.AtualizarPlanilha(planilhaRelatorio, produtoValidado);
                 
@@ -92,12 +112,8 @@ namespace BotScanner._01___Sellers
                 
                 await Task.Delay(100);
 
-                listaDeStatus = new();
-            }
-            
-                                    
-            
-
+                listaDeStatus = new();                
+            }          
             EncerrarNavegador();
         }
         
@@ -133,19 +149,21 @@ namespace BotScanner._01___Sellers
             return $"{urlBase}{FormatarSKU(termoBusca)}";
         }
 
-        public static string AcessarProduto()
+        public static bool AcessarProduto(string nomeProduto)
         {
             try
-            {
-                BuscarElemento_PorXpath("//*[@id=\"gallery-layout-container\"]/div/section/a").Click();
+            {                
+                BuscarElemento_PorXpath($"//img[@alt='{nomeProduto}']").Click();                
+                PlanilhaPage.produtoEncontrado = true;
                 status = true;
-                return "Produto encontrado e clique efetuado com sucesso";
+                return status;
             }
             catch (Exception e)
             {
                 status = false;
+                PlanilhaPage.produtoEncontrado = false;
                 Console.WriteLine(e);
-                return $"Produto não encontrado";
+                return status;
             }
         }
 
@@ -285,7 +303,7 @@ namespace BotScanner._01___Sellers
                     status = false;
 
 
-                produtoValidado.CoresEncontradas = ExtrairCorDaString(corEncontradaProduto, corProdutoReferencia);
+                produtoValidado.CoresEncontradas = PlanilhaPage.produtoEncontrado.Equals(true) ? ExtrairCorDaString(corEncontradaProduto, corProdutoReferencia) : "Produto não encontrado";
                 produtoValidado.CoresEsperadas = corEsperadaProduto;
 
                 listaDeStatus.Add(status);
@@ -334,11 +352,12 @@ namespace BotScanner._01___Sellers
 
                 foreach (var variation in variations)
                 {
-                    foreach (var item in variation.variant)
-                    {
-                        if (!string.IsNullOrEmpty(item.size))                        
-                            listaTamanhosEsperados.Add(item.size);
-                    }
+                    if(variation.qty > 0)
+                        foreach (var item in variation.variant)
+                        {
+                            if (!string.IsNullOrEmpty(item.size) )                        
+                                listaTamanhosEsperados.Add(StringFormatter.FormatarTexto_Descricao(item.size));
+                        }
                 }
 
                 foreach (var tamanho in tamanhoProdutoLista)
@@ -348,6 +367,9 @@ namespace BotScanner._01___Sellers
 
                 listaTamanhosEsperados.Sort(StringComparer.OrdinalIgnoreCase);
                 listaTamanhosEncontrados.Sort(StringComparer.OrdinalIgnoreCase);
+
+                listaTamanhosEsperados = RemoverItensVazios(listaTamanhosEsperados);
+                listaTamanhosEncontrados = RemoverItensVazios(listaTamanhosEncontrados);
 
                 produtoValidado.TamanhoEncontrado = String.Join(",", listaTamanhosEncontrados);
                 produtoValidado.TamanhoEsperado = String.Join(",", listaTamanhosEsperados);
@@ -379,6 +401,13 @@ namespace BotScanner._01___Sellers
                     return false;
             }
             return true;
+        }
+
+        public static List<string> RemoverItensVazios(List<string> lista)
+        {
+            lista.RemoveAll(item => string.IsNullOrEmpty(item));
+
+            return lista;
         }
     }
 }

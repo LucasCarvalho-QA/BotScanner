@@ -93,7 +93,7 @@ namespace BotScanner
         {            
             int totalItems = produtosSelecionados.result.data.Count;
             
-            TimeSpan estimatedTime = TimeSpan.FromSeconds(totalItems * 10);
+            TimeSpan estimatedTime = TimeSpan.FromSeconds(totalItems * 12);
             
             _endTime = _startTime.Add(estimatedTime);
             txtPrevisaoTermino.Text = _endTime.ToString();
@@ -188,7 +188,7 @@ namespace BotScanner
             status = status == "True" ? "OK" : "NOK";
             Dispatcher.Invoke(() =>
             {
-                ViewModel.LogText += $"'[{datetime}] {name}': {status}\n"; // Adiciona uma nova linha para cada item validado
+                ViewModel.LogText += $"[{datetime}] {name}: {status}\n"; // Adiciona uma nova linha para cada item validado
             });
                         
             await AtribuirItensValidados();

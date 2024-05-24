@@ -35,6 +35,7 @@ namespace BotScanner._02___Utilidades.Relatorio
 
         public static List<PlanilhaPage> PlanilhaCarregada = new List<PlanilhaPage>();
         public static string diretorioPlanilha = string.Empty;
+        public static bool produtoEncontrado;
 
         public List<PlanilhaPage> CarregarDadosPlanilha_PorSeller(string seller)
         {
@@ -153,7 +154,9 @@ namespace BotScanner._02___Utilidades.Relatorio
             worksheet.Cell($"B{linhaVazia}").Value = novosDados.SKU_Parceiro;
             worksheet.Cell($"C{linhaVazia}").Value = novosDados.Status == "True" ? "Sucesso" : "Item divergente";
             worksheet.Cell($"C{linhaVazia}").Style.Fill.BackgroundColor = novosDados.Status == "True" ? XLColor.Green : XLColor.Red;
-            worksheet.Cell($"D{linhaVazia}").Value = novosDados.ItemEncontrado;
+            
+            worksheet.Cell($"D{linhaVazia}").Value = produtoEncontrado ? "Sim" : "Não";
+            worksheet.Cell($"D{linhaVazia}").Style.Fill.BackgroundColor = produtoEncontrado ? XLColor.Green : XLColor.Red;
 
             worksheet.Cell($"E{linhaVazia}").Value = novosDados.NomeEsperado;
             worksheet.Cell($"E{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
@@ -178,10 +181,10 @@ namespace BotScanner._02___Utilidades.Relatorio
             worksheet.Cell($"M{linhaVazia}").Value = novosDados.TamanhoEsperado;
             worksheet.Cell($"M{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
             worksheet.Cell($"N{linhaVazia}").Value = novosDados.TamanhoEncontrado;
-            worksheet.Cell($"N{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.PrecoEsperado, novosDados.PrecoEncontrado);
-
-            worksheet.Cell($"O{linhaVazia}").Value = novosDados.Duracao;
-            worksheet.Cell($"P{linhaVazia}").Value = novosDados.Observacao;
+            worksheet.Cell($"N{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.TamanhoEsperado, novosDados.TamanhoEncontrado);
+            
+            worksheet.Cell($"O{linhaVazia}").Value = novosDados.Observacao;
+            worksheet.Cell($"P{linhaVazia}").Value = novosDados.Duracao;
             worksheet.Cell($"Q{linhaVazia}").Value = novosDados.LinkBusca;
             worksheet.Cell($"R{linhaVazia}").Value = novosDados.LinkConectaLa;
 
@@ -190,7 +193,7 @@ namespace BotScanner._02___Utilidades.Relatorio
 
         public static XLColor RetornarEstilo(string resultadoEsperado, string resultadoObtido)
         {
-            return resultadoEsperado.Equals(resultadoObtido) ? XLColor.Green : XLColor.Red;
+            return resultadoEsperado.Equals(resultadoObtido) && produtoEncontrado.Equals(true) ? XLColor.Green : XLColor.Red;
         }
 
     }
