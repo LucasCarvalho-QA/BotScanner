@@ -24,7 +24,8 @@ namespace BotScanner._02___Utilidades.Relatorio
         public string PrecoEncontrado { get; set; }
         public string CoresEsperadas { get; set; }
         public string CoresEncontradas { get; set; }
-
+        public string TamanhoEsperado { get; set; }
+        public string TamanhoEncontrado { get; set; }
 
         public string Duracao { get; set; }
         public string Observacao { get; set; }
@@ -90,11 +91,13 @@ namespace BotScanner._02___Utilidades.Relatorio
                     PrecoEncontrado = linha.Cell("J1").GetValue<string>(),
                     CoresEsperadas = linha.Cell("K1").GetValue<string>(),
                     CoresEncontradas = linha.Cell("L1").GetValue<string>(),
+                    TamanhoEsperado = linha.Cell("M1").GetValue<string>(),
+                    TamanhoEncontrado = linha.Cell("N1").GetValue<string>(),
 
-                    Observacao = linha.Cell("M1").GetValue<string>(),                    
-                    Duracao = linha.Cell("N1").GetValue<string>(),
-                    LinkBusca = linha.Cell("O1").GetValue<string>(),
-                    LinkConectaLa = linha.Cell("P1").GetValue<string>()
+                    Observacao = linha.Cell("O1").GetValue<string>(),                    
+                    Duracao = linha.Cell("P1").GetValue<string>(),
+                    LinkBusca = linha.Cell("Q1").GetValue<string>(),
+                    LinkConectaLa = linha.Cell("R1").GetValue<string>()
               };
 
                 dados.Add(dado);
@@ -122,11 +125,13 @@ namespace BotScanner._02___Utilidades.Relatorio
             worksheet.Cell("J1").Value = "Preco encontrado";
             worksheet.Cell("K1").Value = "Cores esperadas";
             worksheet.Cell("L1").Value = "Cores encontradas";
-            
-            worksheet.Cell("M1").Value = "Observação";
-            worksheet.Cell("N1").Value = "Duração";
-            worksheet.Cell("O1").Value = "Link do produto";
-            worksheet.Cell("P1").Value = "Link ConectaLa";
+            worksheet.Cell("M1").Value = "Tamanhos esperados";
+            worksheet.Cell("N1").Value = "Tamanhos encontrados";
+
+            worksheet.Cell("O1").Value = "Observação";
+            worksheet.Cell("P1").Value = "Duração";
+            worksheet.Cell("Q1").Value = "Link do produto";
+            worksheet.Cell("R1").Value = "Link ConectaLa";
 
 
             string nomeDoArquivo = $"{seller} - {localRunId}.xlsx";
@@ -166,14 +171,19 @@ namespace BotScanner._02___Utilidades.Relatorio
             worksheet.Cell($"J{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.PrecoEsperado, novosDados.PrecoEncontrado);
 
             worksheet.Cell($"K{linhaVazia}").Value = novosDados.CoresEsperadas;
-            //worksheet.Cell($"K{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
+            worksheet.Cell($"K{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
             worksheet.Cell($"L{linhaVazia}").Value = novosDados.CoresEncontradas;
-            //worksheet.Cell($"L{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.CoresEsperadas, novosDados.CoresEncontradas);
+            worksheet.Cell($"L{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.CoresEsperadas, novosDados.CoresEncontradas);
 
-            worksheet.Cell($"M{linhaVazia}").Value = novosDados.Duracao;
-            worksheet.Cell($"N{linhaVazia}").Value = novosDados.Observacao;
-            worksheet.Cell($"O{linhaVazia}").Value = novosDados.LinkBusca;
-            worksheet.Cell($"P{linhaVazia}").Value = novosDados.LinkConectaLa;
+            worksheet.Cell($"M{linhaVazia}").Value = novosDados.TamanhoEsperado;
+            worksheet.Cell($"M{linhaVazia}").Style.Fill.BackgroundColor = XLColor.GreenYellow;
+            worksheet.Cell($"N{linhaVazia}").Value = novosDados.TamanhoEncontrado;
+            worksheet.Cell($"N{linhaVazia}").Style.Fill.BackgroundColor = RetornarEstilo(novosDados.PrecoEsperado, novosDados.PrecoEncontrado);
+
+            worksheet.Cell($"O{linhaVazia}").Value = novosDados.Duracao;
+            worksheet.Cell($"P{linhaVazia}").Value = novosDados.Observacao;
+            worksheet.Cell($"Q{linhaVazia}").Value = novosDados.LinkBusca;
+            worksheet.Cell($"R{linhaVazia}").Value = novosDados.LinkConectaLa;
 
             workbook.Save();
         }

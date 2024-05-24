@@ -15,7 +15,7 @@ namespace BotScanner._02___Utilidades
 
         public static string EliminarEspacoDuplo(string texto)
         {
-            return texto.Replace("  ", " ").Replace("   "," ");
+            return texto.Replace("   ", "  ").Replace("  "," ");
         }
 
 
