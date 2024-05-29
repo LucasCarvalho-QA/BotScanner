@@ -42,8 +42,8 @@ namespace BotScanner._02___Utilidades.ConectaLa
         public float weight_gross { get; set; }
         public float weight_liquid { get; set; }
         public float height { get; set; }
-        public int width { get; set; }
-        public int length { get; set; }
+        public float width { get; set; }
+        public float length { get; set; }
         public int items_per_package { get; set; }
         public string brand { get; set; }
         public long ean { get; set; }

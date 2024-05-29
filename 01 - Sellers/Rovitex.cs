@@ -21,8 +21,9 @@ namespace BotScanner._01___Sellers
         RestParametros restParametros = new();
 
         internal static string urlBase = "https://www.rovitex.com.br/";
-        internal static string rovitextEndpoint = "Api/V1/Products/list?store=78&status=enabled";
+        internal static string rovitextEndpoint = "Api/V1/Products/list?store=78&status=enabled&page=";
         internal static Produtos produtosCarregados = new();
+        internal static List<Datum> produtosCarregados_Todos = new();
         public static bool status;
         public static bool precoComAjustePercentual;
         public static List<bool> listaDeStatus = new();
@@ -34,16 +35,17 @@ namespace BotScanner._01___Sellers
 
         public async Task CarregarProdutosAsync()
         {
-            await CarregarProdutos();
+            //await CarregarProdutos();
+            await CarregarTodosOsProdutos();
         }
         
-        public static async Task<Produtos> CarregarProdutos()
-        {
+        public static async Task<Produtos> CarregarTodosOsProdutos_kkkkkkkkkkkkkkkkkkkkkkk()
+        {            
             RestParametros parametrosRovitex = RestParametros.ConfiguracaoChamadaAPI();
             parametrosRovitex.Endpoint = rovitextEndpoint;
 
             string response = await Rest.RealizarChamadaAPIAsync(parametrosRovitex);
-            var produtosDesserializados = JsonConvert.DeserializeObject<Produtos>(response);                        
+            var produtosDesserializados = JsonConvert.DeserializeObject<Produtos>(response);            
             
             produtosCarregados = produtosDesserializados;            
             MainWindow.quantidadeTotalItens = produtosCarregados.result.data.Count;
@@ -52,18 +54,66 @@ namespace BotScanner._01___Sellers
             return produtosCarregados;
         }
 
+        public static async Task<Produtos> CarregarTodosOsProdutos()
+        {
+            List<Datum> listaGeralProdutos = new List<Datum>();
+
+            RestParametros parametrosRovitex = RestParametros.ConfiguracaoChamadaAPI();
+            parametrosRovitex.Endpoint = rovitextEndpoint;
+
+            // Primeira chamada à API
+            string response = await Rest.RealizarChamadaAPIAsync(parametrosRovitex);
+            var produtosDesserializados = JsonConvert.DeserializeObject<Produtos>(response);
+
+            listaGeralProdutos.AddRange(produtosDesserializados.result.data);
+
+            int totalDePaginas = 10;
+            //int totalDePaginas = produtosDesserializados.result.pages_count;
+
+            // Chamadas subsequentes para as demais páginas
+            for (int i = 2; i <= totalDePaginas; i++)
+            {
+                parametrosRovitex.Endpoint = rovitextEndpoint+i.ToString(); // Ajustar os parâmetros da chamada
+
+                response = await Rest.RealizarChamadaAPIAsync(parametrosRovitex);
+
+                if (!string.IsNullOrEmpty(response))
+                {
+                    produtosDesserializados = JsonConvert.DeserializeObject<Produtos>(response);
+                    listaGeralProdutos.AddRange(produtosDesserializados.result.data);
+                }
+                else
+                {
+                    Console.WriteLine(i);
+                }
+                
+            }
+
+            produtosCarregados = new Produtos
+            {
+                result = new Result
+                {
+                    data = listaGeralProdutos
+                }
+            };
+
+            MainWindow.quantidadeTotalItens = produtosCarregados.result.data.Count;            
+            MainWindow.produtosSelecionados = produtosCarregados;
+
+            return produtosCarregados;
+        }
+
+
 
         public static async Task FluxoRovitex(MainWindow main)
         {
             string seller = "Rovitex";
             string planilhaRelatorio = PlanilhaPage.GerarPlanilha(seller);
-
-
-            
+                        
             IniciarNavegador();
 
-            //Ajuste de quantidade de produtos
-            foreach (var produto in produtosCarregados.result.data.Take(100))
+            //Ajuste de quantidade de produtos            
+            foreach (var produto in produtosCarregados.result.data)
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.Start();
@@ -174,7 +224,7 @@ namespace BotScanner._01___Sellers
 
             try
             {
-                nomeEncontradoProduto = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[1]/div/div/div[1]/h1/span");
+                nomeEncontradoProduto = BuscarElemento_PorClassName("vtex-store-components-3-x-productBrand").Text;
 
                 if (nomeEncontradoProduto.Equals(nomeProdutoReferencia))
                     status = true;
@@ -205,16 +255,11 @@ namespace BotScanner._01___Sellers
 
             try
             {                
-                string realInteiro = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[4]/div/div/div[2]/span/span/span/span[3]");
-                string realCentavos = BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[4]/div/div/div[2]/span/span/span/span[5]");
+                string realInteiro = BuscarElemento_PorClassName("vtex-product-price-1-x-currencyInteger").Text;
+                string realCentavos = BuscarElemento_PorClassName("vtex-product-price-1-x-currencyFraction").Text;
                 precoEncontradoProduto = $"{realInteiro},{realCentavos}";
 
-                //if (precoEncontradoProduto.Equals(precoEsperadoProduto))
-                //    status = true;
-                //else
-                //    status = ValidarPrecoComIntervalo(precoEncontradoProduto, precoEsperadoProduto);
-
-                if (precoEncontradoProduto.Equals(precoEsperadoProduto))
+                if (float.Parse(precoEncontradoProduto) <= float.Parse(precoEsperadoProduto))
                     status = true;
                 else
                     status = false;
@@ -228,7 +273,7 @@ namespace BotScanner._01___Sellers
 
             catch (Exception e)
             {
-                produtoValidado.PrecoEncontrado = "Produto não encontrado";
+                produtoValidado.PrecoEncontrado = "Preço divergente";
                 produtoValidado.PrecoEsperado = precoEsperadoProduto.Replace(",", ".");
                 listaDeStatus.Add(status);
                 return status = false;
@@ -262,7 +307,7 @@ namespace BotScanner._01___Sellers
 
             try
             {
-                descricaoEncontradoProduto = StringFormatter.FormatarTexto_Descricao(BuscarTextoDoElemento_PorXpath("/html/body/div[5]/div/div[1]/div/div/div/div[4]/div/div[2]/div/section/div/div[2]/div/div/div/div[12]/div[1]/div/div/div/div/div"));
+                descricaoEncontradoProduto = StringFormatter.FormatarTexto_Descricao(BuscarElemento_PorClassName("vtex-store-components-3-x-productDescriptionText").Text);
 
                 if (descricaoEncontradoProduto.Equals(descricaoEsperadoProduto))
                     status = true;
@@ -411,4 +456,5 @@ namespace BotScanner._01___Sellers
         }
     }
 }
+
 

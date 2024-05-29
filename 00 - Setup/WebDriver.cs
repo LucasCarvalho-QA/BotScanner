@@ -101,6 +101,11 @@ namespace BotScanner._00___Setup
             return BuscarElemento(By.CssSelector(cssSelector));
         }
 
+        public static IWebElement BuscarElemento_PorClassName(string className)
+        {
+            return BuscarElemento(By.ClassName(className));
+        }
+
         public static ReadOnlyCollection<IWebElement> BuscarListaDeElementos_PorCssSelector(string cssSelector)
         {
             return BuscarListaElementos(By.CssSelector(cssSelector));
@@ -115,6 +120,7 @@ namespace BotScanner._00___Setup
         {
             return BuscarElemento(By.Id(id));
         }
+
 
         public static string BuscarTextoDoElementoPorID(string id)
         {
