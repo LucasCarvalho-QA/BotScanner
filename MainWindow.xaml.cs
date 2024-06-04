@@ -181,15 +181,27 @@ namespace BotScanner
             await AtribuirItensValidados();
         }
 
-        public async Task AtualizarLogAsync(string name, string status)
+        public async Task AtualizarLogAsync(string name, string status, bool limparConsole)
         {
             string datetime = DateTime.Now.ToString("HH:mm:ss");
 
             status = status == "True" ? "OK" : "NOK";
-            Dispatcher.Invoke(() =>
+
+            if (!limparConsole)
             {
-                ViewModel.LogText += $"[{datetime}] {name}: {status}\n"; // Adiciona uma nova linha para cada item validado
-            });
+                Dispatcher.Invoke(() =>
+                {
+                    ViewModel.LogText += $"[{datetime}] {name}: {status}\n";
+                });
+            }
+            else 
+            {
+                Dispatcher.Invoke(() =>
+                {                    
+                    ViewModel.LogText = $"[{datetime}] {name}: {status}\n";
+                });
+            }
+            
                         
             await AtribuirItensValidados();
             await AtribuirItensRestantes();

@@ -35,25 +35,9 @@ namespace BotScanner._01___Sellers
 
         public async Task CarregarProdutosAsync()
         {
-            //await CarregarProdutos();
             await CarregarTodosOsProdutos();
         }
         
-        public static async Task<Produtos> CarregarTodosOsProdutos_kkkkkkkkkkkkkkkkkkkkkkk()
-        {            
-            RestParametros parametrosRovitex = RestParametros.ConfiguracaoChamadaAPI();
-            parametrosRovitex.Endpoint = rovitextEndpoint;
-
-            string response = await Rest.RealizarChamadaAPIAsync(parametrosRovitex);
-            var produtosDesserializados = JsonConvert.DeserializeObject<Produtos>(response);            
-            
-            produtosCarregados = produtosDesserializados;            
-            MainWindow.quantidadeTotalItens = produtosCarregados.result.data.Count;
-            MainWindow.produtosSelecionados = produtosCarregados;
-
-            return produtosCarregados;
-        }
-
         public static async Task<Produtos> CarregarTodosOsProdutos()
         {
             List<Datum> listaGeralProdutos = new List<Datum>();
@@ -67,7 +51,7 @@ namespace BotScanner._01___Sellers
 
             listaGeralProdutos.AddRange(produtosDesserializados.result.data);
 
-            int totalDePaginas = 10;
+            int totalDePaginas = 2;
             //int totalDePaginas = produtosDesserializados.result.pages_count;
 
             // Chamadas subsequentes para as demais páginas
@@ -96,6 +80,19 @@ namespace BotScanner._01___Sellers
                     data = listaGeralProdutos
                 }
             };
+            
+            PlanilhaPage.CriarDiretorioEvidencias();
+
+            var lista = PlanilhaPage.RetornarLista_ProdutosValidados("Rovitex_Logs.txt");
+            var listaAux = produtosCarregados.result.data;            
+
+            for (int i = 0; i < listaAux.Count; i++)
+            {
+                if (lista.Contains(listaAux[i].product.product_id))
+                {
+                    produtosCarregados.result.data.Remove(listaAux[i]);
+                }
+            }
 
             MainWindow.quantidadeTotalItens = produtosCarregados.result.data.Count;            
             MainWindow.produtosSelecionados = produtosCarregados;
@@ -109,9 +106,10 @@ namespace BotScanner._01___Sellers
         {
             string seller = "Rovitex";
             string planilhaRelatorio = PlanilhaPage.GerarPlanilha(seller);
-                        
+
             IniciarNavegador();
 
+            int contadorLimpaLog = 0;
             //Ajuste de quantidade de produtos            
             foreach (var produto in produtosCarregados.result.data)
             {
@@ -157,8 +155,14 @@ namespace BotScanner._01___Sellers
                 produtoValidado.Duracao = $"{Math.Ceiling(stopwatch.Elapsed.TotalSeconds * 10) / 10} segundos";                
 
                 PlanilhaPage.AtualizarPlanilha(planilhaRelatorio, produtoValidado);
+                PlanilhaPage.SalvarLog_ProdutosValidados(produto.product.product_id, "Rovitex_Logs.txt");
+
                 
-                await main.AtualizarLogAsync(produto.product.name, produtoValidado.Status);
+
+                bool limparConsole = contadorLimpaLog % 10 == 0 ? true : false;
+                contadorLimpaLog++;
+
+                await main.AtualizarLogAsync(produto.product.name, produtoValidado.Status, limparConsole);
                 
                 await Task.Delay(100);
 
@@ -298,8 +302,6 @@ namespace BotScanner._01___Sellers
             return false;
         }
 
-
-
         public static bool ValidarDescricao(string descricaoProdutoReferencia, PlanilhaPage produtoValidado)
         {
             string descricaoEncontradoProduto = string.Empty;
@@ -335,8 +337,7 @@ namespace BotScanner._01___Sellers
         public static bool ValidarCor(string corProdutoReferencia, string corNomeProduto, PlanilhaPage produtoValidado) 
         {
             string corEncontradaProduto = string.Empty;
-            string corEsperadaProduto = corProdutoReferencia;
-            
+            string corEsperadaProduto = corProdutoReferencia;           
 
             try
             {

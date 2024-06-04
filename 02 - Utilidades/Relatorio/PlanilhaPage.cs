@@ -1,10 +1,12 @@
 ﻿using ClosedXML.Excel;
+using Irony.Ast;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace BotScanner._02___Utilidades.Relatorio
 {
@@ -36,6 +38,9 @@ namespace BotScanner._02___Utilidades.Relatorio
         public static List<PlanilhaPage> PlanilhaCarregada = new List<PlanilhaPage>();
         public static string diretorioPlanilha = string.Empty;
         public static bool produtoEncontrado;
+        public static string diretorioDestinoPlanilha = string.Empty;
+        public static DirectoryInfo TestResultFolder = Directory.CreateDirectory(@"..\..\..\04 - Evidencias");
+        public static DirectoryInfo DatetimeFolder = Directory.CreateDirectory(Path.Combine(TestResultFolder.FullName, DateTime.Now.Date.ToString("dd-MM-yyyy")));
 
         public List<PlanilhaPage> CarregarDadosPlanilha_PorSeller(string seller)
         {
@@ -49,22 +54,56 @@ namespace BotScanner._02___Utilidades.Relatorio
 
         public static XLWorkbook CarregarPlanilha(string nomeArquivo)
         {
-            string nomeArquivoFormatado = $@"05 - Dados\\{nomeArquivo}.xlsx".Replace(".xlsx.xlsx", ".xlsx");
-
-            var diretorioAtual = Directory.GetCurrentDirectory();
-            var planilha = Path.Combine(diretorioAtual, nomeArquivoFormatado);
-            diretorioPlanilha = planilha;
+            var planilha = Path.Combine(diretorioDestinoPlanilha, nomeArquivo);
+            //diretorioPlanilha = planilha;
 
             return new XLWorkbook(planilha);
         }
 
+        public static void SalvarLog_ProdutosValidados(string text, string filename )
+        {
+            FileStream fs = new FileStream(Path.Combine(diretorioDestinoPlanilha, filename), FileMode.Append, FileAccess.Write);
+            using var sw = new StreamWriter(fs);
+            sw.WriteLine($"{text}");            
+        }
+
+        public static List<string> RetornarLista_ProdutosValidados(string filename)
+        {            
+            List<string> produtosValidados = new List<string>();
+         
+            using (FileStream fs = new FileStream(Path.Combine(DatetimeFolder.FullName, filename), FileMode.OpenOrCreate, FileAccess.Read))
+            {                
+                using (StreamReader sr = new StreamReader(fs))
+                {
+                    string linha;
+                    while ((linha = sr.ReadLine()) != null)
+                    {                    
+                        if (!string.IsNullOrEmpty(linha) && !linha.Trim().Equals(","))
+                        {                     
+                            produtosValidados.Add(linha);
+                        }
+                    }
+                }
+            }
+            
+            return produtosValidados;
+        }
+
         public static void MoverArquivo(string nomeArquivo)
         {
-            var diretorioAtual = Path.Combine(Environment.CurrentDirectory, nomeArquivo);
-            var diretorioDestino = Path.Combine(Environment.CurrentDirectory, $@"05 - Dados\\{nomeArquivo}").Replace("\\\\", "\\");
+            var diretorioAtual = Path.Combine(Environment.CurrentDirectory, nomeArquivo); 
 
-            File.Move(diretorioAtual, diretorioDestino);
+            diretorioDestinoPlanilha = DatetimeFolder.FullName;
+
+            File.Move(diretorioAtual, Path.Combine(DatetimeFolder.FullName, $"{nomeArquivo}"));
         }
+
+        public static void CriarDiretorioEvidencias()
+        {
+            TestResultFolder = Directory.CreateDirectory(@"..\..\..\04 - Evidencias");
+            PlanilhaPage.SalvarLog_ProdutosValidados("0", "Rovitex_Logs.txt");
+        }
+    
 
 
         public static List<PlanilhaPage> CarregarDadosDaPlanilha(string nomeArquivo)
