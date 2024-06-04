@@ -39,7 +39,7 @@ namespace BotScanner._02___Utilidades.Relatorio
         public static string diretorioPlanilha = string.Empty;
         public static bool produtoEncontrado;
         public static string diretorioDestinoPlanilha = string.Empty;
-        public static DirectoryInfo TestResultFolder = Directory.CreateDirectory(@"..\..\..\04 - Evidencias");
+        public static DirectoryInfo TestResultFolder = Directory.CreateDirectory(@"04 - Evidencias");
         public static DirectoryInfo DatetimeFolder = Directory.CreateDirectory(Path.Combine(TestResultFolder.FullName, DateTime.Now.Date.ToString("dd-MM-yyyy")));
 
         public List<PlanilhaPage> CarregarDadosPlanilha_PorSeller(string seller)
@@ -55,7 +55,7 @@ namespace BotScanner._02___Utilidades.Relatorio
         public static XLWorkbook CarregarPlanilha(string nomeArquivo)
         {
             var planilha = Path.Combine(diretorioDestinoPlanilha, nomeArquivo);
-            //diretorioPlanilha = planilha;
+            diretorioPlanilha = planilha;
 
             return new XLWorkbook(planilha);
         }
@@ -100,8 +100,10 @@ namespace BotScanner._02___Utilidades.Relatorio
 
         public static void CriarDiretorioEvidencias()
         {
-            TestResultFolder = Directory.CreateDirectory(@"..\..\..\04 - Evidencias");
-            PlanilhaPage.SalvarLog_ProdutosValidados("0", "Rovitex_Logs.txt");
+            //Release
+            TestResultFolder = Directory.CreateDirectory(@"04 - Evidencias");
+            //TestResultFolder = Directory.CreateDirectory(@"..\..\..\04 - Evidencias");
+            //PlanilhaPage.SalvarLog_ProdutosValidados("0", "Rovitex_Logs.txt");
         }
     
 
