@@ -6,6 +6,7 @@ using BotScanner._02___Utilidades.Relatorio;
 using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Drawing;
 using DocumentFormat.OpenXml.Spreadsheet;
+using DocumentFormat.OpenXml.Wordprocessing;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -69,8 +70,8 @@ namespace BotScanner
 
         public static Produtos produtosSelecionados = null;
         public static int itensValidados = 0;
-        public static int itensValidadosOK = 1;
-        public static int itensValidadosNOK = 1;
+        public static int itensValidadosOK = 0;
+        public static int itensValidadosNOK = 0;
         public static int quantidadeTotalItens = 0;
 
         private async void Button_Click(object sender, RoutedEventArgs e)
@@ -114,10 +115,10 @@ namespace BotScanner
                 case "Rovitex":
                     await AtualizarLogAsync_Mensageria($"Selecionar {seller}");
                     await AtualizarLogAsync_Mensageria($"Preparando ambiente");
-                    Rovitex rovitex = new();
                     MainWindow mainWindow = (MainWindow)Application.Current.MainWindow;
+                    Rovitex rovitex = new(mainWindow);                    
                     await AtualizarLogAsync_Mensageria($"Carregando produtos");
-                    await rovitex.CarregarProdutosAsync();
+                    await rovitex.CarregarProdutosAsync(mainWindow);
                     await AtualizarLogAsync_Mensageria($"Produtos do seller {seller} carregados com sucesso");
                     await AtribuirQuantidadeItens();
                     await PopularVariaveisIniciais();
@@ -179,6 +180,8 @@ namespace BotScanner
         {            
             await AtribuirItensRestantes();
             await AtribuirItensValidados();
+            await AtribuirItensOK();
+            await AtribuirItensNotOK();
         }
 
         public async Task AtualizarLogAsync(string name, string status, bool limparConsole)
@@ -212,14 +215,24 @@ namespace BotScanner
                 await AtribuirItensNotOK();                        
         }
 
-        public async Task AtualizarLogAsync_Mensageria(string mensagem)
+        public async Task AtualizarLogAsync_Mensageria(string mensagem, bool limparConsole = false)
         {
             string datetime = DateTime.Now.ToString("HH:mm:ss");
 
-            Dispatcher.Invoke(() =>
+            if (!limparConsole)
             {
-                ViewModel.LogText += $"\n[{datetime}] {mensagem}\n"; 
-            });
+                Dispatcher.Invoke(() =>
+                {
+                    ViewModel.LogText += $"[{datetime}] {mensagem}\n";
+                });
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    ViewModel.LogText = $"[{datetime}] {mensagem}\n";
+                });
+            }
 
             Thread.Sleep(700);
         }

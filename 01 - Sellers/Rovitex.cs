@@ -2,6 +2,7 @@
 using BotScanner._02___Utilidades;
 using BotScanner._02___Utilidades.ConectaLa;
 using BotScanner._02___Utilidades.Relatorio;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -28,17 +29,17 @@ namespace BotScanner._01___Sellers
         public static bool precoComAjustePercentual;
         public static List<bool> listaDeStatus = new();
 
-        public Rovitex()
+        public Rovitex(MainWindow main)
         {
-            _ = CarregarProdutosAsync();
+           // _ = CarregarProdutosAsync(main);
         }
 
-        public async Task CarregarProdutosAsync()
+        public async Task CarregarProdutosAsync(MainWindow main)
         {
-            await CarregarTodosOsProdutos();
+            await CarregarTodosOsProdutos(main);
         }
         
-        public static async Task<Produtos> CarregarTodosOsProdutos()
+        public static async Task<Produtos> CarregarTodosOsProdutos(MainWindow main)
         {
             List<Datum> listaGeralProdutos = new List<Datum>();
 
@@ -51,8 +52,12 @@ namespace BotScanner._01___Sellers
 
             listaGeralProdutos.AddRange(produtosDesserializados.result.data);
 
-            int totalDePaginas = 2;
-            //int totalDePaginas = produtosDesserializados.result.pages_count;
+            int totalDePaginas = produtosDesserializados.result.pages_count;
+            int contadorLimpaLog_Produtos = 0;
+
+            await main.AtualizarLogAsync_Mensageria($"Foram encontrados {produtosDesserializados.result.registers_count} produtos para o seller Rovitex");
+            await main.AtualizarLogAsync_Mensageria($"O carregamento leva em torno de {(int)(totalDePaginas * 6)/60} minutos");
+            await main.AtualizarLogAsync_Mensageria($"O BotScanner seguirá automaticamente, por favor, aguarde!");
 
             // Chamadas subsequentes para as demais páginas
             for (int i = 2; i <= totalDePaginas; i++)
@@ -70,6 +75,14 @@ namespace BotScanner._01___Sellers
                 {
                     Console.WriteLine(i);
                 }
+                
+                bool limparConsole = contadorLimpaLog_Produtos % 5 == 0 ? true : false;
+                contadorLimpaLog_Produtos++;                
+
+                await main.AtualizarLogAsync_Mensageria($"Foram carregados {listaGeralProdutos.Count} produtos de um total de {produtosDesserializados.result.registers_count} \n", limparConsole);
+
+                if(contadorLimpaLog_Produtos % 10 == 0)                
+                    await main.AtualizarLogAsync_Mensageria($"Tempo estimado restante: {(int)((totalDePaginas - i) * 6) / 60} minutos \n", false);
                 
             }
 
@@ -94,8 +107,12 @@ namespace BotScanner._01___Sellers
                 }
             }
 
+            await main.AtualizarLogAsync_Mensageria($"Foi identificado que {lista.Count} produtos já foram validados. Eles serão removidos da listagem final");
+
             MainWindow.quantidadeTotalItens = produtosCarregados.result.data.Count;            
             MainWindow.produtosSelecionados = produtosCarregados;
+
+            await main.AtualizarLogAsync_Mensageria($"Quantidade de produtos que serão validados: {produtosCarregados.result.data.Count}");
 
             return produtosCarregados;
         }
@@ -122,6 +139,7 @@ namespace BotScanner._01___Sellers
 
                 bool produtoEncontrado = AcessarProduto(produto.product.name);
 
+                produtoValidado.DataHora = DateTime.Now.ToString();
                 produtoValidado.Seller = seller;
                 produtoValidado.SKU_Parceiro = produto.product.sku;
                 produtoValidado.LinkBusca = RetornarUrlSeller(produto.product.sku);
